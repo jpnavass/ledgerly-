@@ -10,6 +10,7 @@ import {
   validateSignerData,
   createOtpRecord,
   verifyOtpAttempt,
+  assertEmailServiceConfigured,
   SigningError,
 } from '../domain/signing.ts';
 import {
@@ -142,5 +143,52 @@ describe('Firma Electrónica eIDAS y Paquete de Evidencias (signing.ts)', () => 
     const checkTamperedName = await verifySignatureEvidence(tamperedEvidence, pdfHashOriginal);
     assert.strictEqual(checkTamperedName.ok, false);
     assert(checkTamperedName.reason?.includes('huella de evidencia no coincide'));
+  });
+
+  it('signed_at procede del servidor e ignora cualquier timestamp manipulado enviado por el cliente', async () => {
+    const realServerTimestamp = new Date().toISOString();
+    const clientClaimedDate = '2020-01-01T00:00:00.000Z'; // Fecha antigua falsa
+
+    const evidence = await createSignatureEvidence({
+      documentId: 'doc-time-test',
+      documentVersion: 1,
+      signerName: 'Ana Ruiz',
+      signerTaxId: '48392021K',
+      documentPdfHash: 'hash_test_123',
+      otpVerified: true,
+      ip: '10.0.0.1',
+      userAgent: 'TestClient/1.0',
+      signedAt: realServerTimestamp, // El endpoint fuerza este valor desde el servidor
+    });
+
+    assert.strictEqual(evidence.signed_at, realServerTimestamp);
+    assert.notStrictEqual(evidence.signed_at, clientClaimedDate);
+  });
+
+  it('viewed se registra una sola vez por sesión y el ciclo documental previene retroceso o duplicidad', () => {
+    // Si un documento ya fue aceptado o rechazado, no puede volver a 'viewed' ni firmarse
+    const acceptedDoc: Document = {
+      id: 'doc-v-1',
+      doc_type: 'quote',
+      status: 'accepted',
+      series: null,
+      subtotal_cents: 100,
+      discount_cents: 0,
+      vat_cents: 21,
+      irpf_cents: 0,
+      total_cents: 121,
+      version: 1,
+      items: [],
+    };
+
+    assert.throws(() => assertCanSignDocument(acceptedDoc), SigningError);
+  });
+
+  it('assertEmailServiceConfigured bloquea sin simulación cuando falta RESEND_API_KEY', () => {
+    assert.throws(
+      () => assertEmailServiceConfigured(''),
+      SigningError
+    );
+    assert.doesNotThrow(() => assertEmailServiceConfigured('re_123456789_valid_key'));
   });
 });

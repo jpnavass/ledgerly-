@@ -7,6 +7,7 @@ import assert from 'node:assert/strict';
 import { sha256Hex, canonicalize } from '../compliance/hash.ts';
 import {
   buildBillingRecord,
+  buildCancellationRecord,
   verifyBillingChain,
   formatAeatHashPayload,
   formatAeatCancellationPayload,
@@ -181,6 +182,78 @@ describe('Cumplimiento Normativo y Registros Inalterables (compliance.ts)', () =
     // Generar código QR vectorial en SVG
     const svg = await generateQrSvg(qrUrl);
     assert(svg.includes('<svg'));
+  });
+
+  it('código QR: decodifica el payload y comprueba minuciosamente todos los parámetros oficiales', () => {
+    const qrUrl = buildQrVerificationUrl({
+      taxId: 'B12345678',
+      seriesNumber: 'FAC-2027/01',
+      issueDate: '2027-04-15',
+      totalCents: 54450,
+      hash: '3C464DAF61ACB827C65FDA19F352A4E3BDC2C640E9E9FC4CC058073F38F12F60',
+      isVerifactu: false,
+    });
+
+    const parsedUrl = new URL(qrUrl);
+    assert.strictEqual(parsedUrl.origin, 'https://sede.agenciatributaria.gob.es');
+    assert.strictEqual(parsedUrl.pathname, '/qr/cotejo');
+    assert.strictEqual(parsedUrl.searchParams.get('nif'), 'B12345678');
+    assert.strictEqual(parsedUrl.searchParams.get('num'), 'FAC-2027/01');
+    assert.strictEqual(parsedUrl.searchParams.get('fecha'), '15-04-2027');
+    assert.strictEqual(parsedUrl.searchParams.get('total'), '544.50');
+    assert.strictEqual(parsedUrl.searchParams.get('hash'), '3C464DAF61ACB827');
+  });
+
+  it('buildCancellationRecord genera registro de anulación y mantiene encadenamiento criptográfico', async () => {
+    const org: Org = {
+      id: 'org-canc-1',
+      name: 'Empresa Test S.L.',
+      tax_id: 'B89890001',
+      address: 'Calle 1',
+      postal_code: '28001',
+      city: 'Madrid',
+      country: 'España',
+    };
+
+    const doc: Document = {
+      id: 'doc-inv-anular',
+      org_id: org.id,
+      doc_type: 'invoice',
+      series: 'FAC',
+      number: 99,
+      issue_date: '2027-01-10',
+      total_cents: 10000,
+      vat_cents: 2100,
+      discount_cents: 0,
+      subtotal_cents: 7900,
+      irpf_cents: 0,
+      items: [],
+      version: 1,
+      status: 'void',
+    };
+
+    const prevRecord: BillingRecord = {
+      id: 'rec-prev',
+      org_id: org.id,
+      document_id: 'doc-prev',
+      record_type: 'alta',
+      series: 'FAC',
+      number: 98,
+      issue_date: '2027-01-09',
+      total_cents: 5000,
+      vat_cents: 1050,
+      previous_hash: '',
+      hash: 'PREVIOUS_HASH_HEX_VALUE',
+      generated_at: '2027-01-09T10:00:00Z',
+      software_version: '2.0.0',
+      qr_payload: '',
+    };
+
+    const cancelRecord = await buildCancellationRecord(doc, org, prevRecord, '2027-01-10T12:00:00Z');
+    assert.strictEqual(cancelRecord.record_type, 'anulacion');
+    assert.strictEqual(cancelRecord.previous_hash, 'PREVIOUS_HASH_HEX_VALUE');
+    assert.strictEqual(cancelRecord.number, 99);
+    assert.strictEqual(cancelRecord.hash.length, 64);
   });
 
   it('audit_events: encadena registros append-only y detecta manipulaciones', async () => {

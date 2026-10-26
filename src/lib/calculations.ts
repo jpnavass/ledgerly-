@@ -359,3 +359,10 @@ export function calcDocumentTotals(
     chapters,
   };
 }
+
+export function calcDocumentMargin(subtotalCents: number, costCents: number): { margin_cents: number; margin_pct: number | null } {
+  const margin_cents = subtotalCents - costCents;
+  const margin_pct = subtotalCents !== 0 ? Math.round(((margin_cents / subtotalCents) * 10000)) / 100 : null;
+  return { margin_cents, margin_pct };
+}
+

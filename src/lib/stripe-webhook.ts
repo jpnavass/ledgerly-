@@ -131,3 +131,16 @@ export async function processStripeEvent(
   processedEventIds.add(event.id);
   return { processed: true };
 }
+
+/**
+ * Valida la firma criptográfica del webhook de Stripe y construye el evento tipado.
+ * Lanza una excepción si la firma no coincide con el secreto del webhook.
+ */
+export function constructWebhookEvent(
+  stripeInstance: Stripe,
+  payload: string,
+  signature: string,
+  secret: string
+): Stripe.Event {
+  return stripeInstance.webhooks.constructEvent(payload, signature, secret);
+}

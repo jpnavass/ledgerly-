@@ -25,14 +25,14 @@ export async function generateDocumentPdf(
   let qrDataUrl: string | undefined;
 
   const isFinalInvoice = doc.doc_type === 'invoice' || doc.doc_type === 'credit_note';
-  if (isFinalInvoice && doc.number) {
-    const seriesNumber = `${doc.series || 'FAC'}-${doc.number}`;
+  if (isFinalInvoice) {
+    const seriesNumber = `${doc.series || 'FAC'}-${doc.number || 1}`;
     const qrUrl = buildQrVerificationUrl({
       taxId: org.tax_id,
       seriesNumber,
       issueDate: doc.issue_date || doc.created_at.slice(0, 10),
       totalCents: doc.total_cents,
-      hash: doc.pdf_hash || doc.id,
+      hash: doc.signature_data || doc.pdf_hash || doc.id,
       isVerifactu: false,
     });
     qrDataUrl = await generateQrDataUrl(qrUrl);

@@ -267,8 +267,11 @@ export function convertDocument(options: ConvertDocumentOptions): {
     );
   }
 
-  if (billedPercentage <= 0 || billedPercentage > 100) {
-    throw new DocumentError('El porcentaje de conversión debe situarse entre el 1% y el 100%.');
+  const currentBilled = source.billed_percentage || 0;
+  if (currentBilled + billedPercentage > 100) {
+    throw new DocumentError(
+      `El porcentaje acumulado facturado superaría el 100% (actual: ${currentBilled}%, intentado: ${billedPercentage}%).`
+    );
   }
 
   const newDocId = `doc-${crypto.randomUUID()}`;
@@ -297,6 +300,7 @@ export function convertDocument(options: ConvertDocumentOptions): {
     status: 'draft',
     title: `${targetType.toUpperCase()} de ${source.title || source.id}`,
     converted_from: source.id,
+    billed_percentage: undefined,
     items: clonedItems,
     locked_at: undefined,
     pdf_url: undefined,
@@ -309,15 +313,17 @@ export function convertDocument(options: ConvertDocumentOptions): {
   // Recalcular totales en el destino
   const recalculated = updateDraftDocument(convertedDoc, { items: clonedItems });
 
-  // Actualizar origen: si se convierte al 100%, pasa a invoiced
-  let updatedSource = { ...source };
-  if (billedPercentage === 100 && targetType === 'invoice') {
+  // Actualizar origen: acumular porcentaje; si llega al 100%, pasa a invoiced
+  const newBilledTotal = currentBilled + billedPercentage;
+  let updatedSource: Document = {
+    ...source,
+    billed_percentage: newBilledTotal,
+    updated_at: now,
+  };
+
+  if (newBilledTotal >= 100 && targetType === 'invoice') {
     assertCanTransition(source.doc_type, source.status, 'invoiced');
-    updatedSource = {
-      ...source,
-      status: 'invoiced',
-      updated_at: now,
-    };
+    updatedSource.status = 'invoiced';
   }
 
   return { newDocument: recalculated, updatedSource };

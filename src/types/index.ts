@@ -267,6 +267,7 @@ export interface Document {
   signature_data?: string;
 
   converted_from?: string;
+  billed_percentage?: number;
   rectifies_document_id?: string;
   rectification_reason?: string;
   rectification_method?: 'differences' | 'substitution';

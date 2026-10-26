@@ -486,4 +486,69 @@ describe('Ciclo de Vida Documental (documents.ts)', () => {
     assert.strictEqual(creditNote.rectification_method, 'substitution');
     assert.strictEqual(updatedOriginal?.status, 'void');
   });
+
+  it('facturación parcial 40% + 60% cierra el origen en invoiced; un 3er intento falla por exceder el total', () => {
+    const quoteDraft = createDraftDocument({
+      doc_type: 'quote',
+      client_id: validClient.id,
+      client: validClient,
+      title: 'Proyecto Integral de Obra',
+      org_id: validOrg.id,
+    });
+
+    const quoteWithLines = updateDraftDocument(quoteDraft, {
+      items: [
+        {
+          id: 'item-quote-obra',
+          item_type: 'line',
+          position: 1,
+          description: 'Ejecución fase 1 y 2',
+          quantity: 1,
+          price_cents: 100000,
+          discount_pct: 0,
+          vat_rate: 21,
+          irpf_rate: 0,
+          is_optional: false,
+        },
+      ],
+    });
+
+    const acceptedQuote: Document = {
+      ...quoteWithLines,
+      status: 'accepted',
+    };
+
+    // 1. Facturar primer hito (40%)
+    const { newDocument: inv1, updatedSource: sourceAfter1 } = convertDocument({
+      source: acceptedQuote,
+      targetType: 'invoice',
+      billedPercentage: 40,
+    });
+
+    assert.strictEqual(inv1.total_cents, 48400); // 40.000 + 21% IVA = 48.400
+    assert.strictEqual(sourceAfter1.status, 'accepted'); // Sigue abierto
+    assert.strictEqual(sourceAfter1.billed_percentage, 40);
+
+    // 2. Facturar segundo hito (60%)
+    const { newDocument: inv2, updatedSource: sourceAfter2 } = convertDocument({
+      source: sourceAfter1,
+      targetType: 'invoice',
+      billedPercentage: 60,
+    });
+
+    assert.strictEqual(inv2.total_cents, 72600); // 60.000 + 21% IVA = 72.600
+    assert.strictEqual(sourceAfter2.billed_percentage, 100);
+    assert.strictEqual(sourceAfter2.status, 'invoiced'); // Se cierra el origen
+
+    // 3. Tercer intento (10% adicional) debe fallar por exceder el 100%
+    assert.throws(
+      () =>
+        convertDocument({
+          source: sourceAfter2,
+          targetType: 'invoice',
+          billedPercentage: 10,
+        }),
+      DocumentError
+    );
+  });
 });

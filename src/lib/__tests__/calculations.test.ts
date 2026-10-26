@@ -8,6 +8,7 @@ import {
   calcLineIrpf,
   calcLineTotal,
   calcDocumentTotals,
+  calcDocumentMargin,
   CalculationError,
   type CalcLineInput,
 } from '../calculations.ts';
@@ -233,5 +234,37 @@ describe('FASE 1: Motor de Cálculos Económicos y Cumplimiento Fiscal (calculat
       const expectedTotal = totals.subtotal_cents + totals.vat_cents + totals.surcharge_cents - totals.irpf_cents;
       assert.strictEqual(totals.total_cents, expectedTotal);
     }
+  });
+
+  it('factura rectificativa por diferencias recalculada línea a línea suma exactamente 0 contra la original', () => {
+    const originalItems: CalcLineInput[] = [
+      { item_type: 'line', is_optional: false, quantity: 2, price_cents: 35000, discount_pct: 10, vat_rate: 21, irpf_rate: 0 },
+      { item_type: 'line', is_optional: false, quantity: 1.5, price_cents: 20000, discount_pct: 0, vat_rate: 10, irpf_rate: 15 },
+    ];
+    const origTotals = calcDocumentTotals(originalItems);
+
+    // Rectificativa por diferencias invierte exactamente las cantidades de cada línea
+    const diffItems: CalcLineInput[] = originalItems.map((item) => ({
+      ...item,
+      quantity: -item.quantity,
+    }));
+    const diffTotals = calcDocumentTotals(diffItems);
+
+    assert.strictEqual(origTotals.subtotal_cents + diffTotals.subtotal_cents, 0);
+    assert.strictEqual(origTotals.vat_cents + diffTotals.vat_cents, 0);
+    assert.strictEqual(origTotals.irpf_cents + diffTotals.irpf_cents, 0);
+    assert.strictEqual(origTotals.total_cents + diffTotals.total_cents, 0);
+  });
+
+  it('funciones auxiliares de cálculo de margen y subtotales operan con precisión entera', () => {
+    const margin = calcDocumentMargin(10000, 6000);
+    assert.strictEqual(margin.margin_cents, 4000);
+    assert.strictEqual(margin.margin_pct, 40);
+
+    const zeroMargin = calcDocumentMargin(0, 0);
+    assert.strictEqual(zeroMargin.margin_pct, null);
+
+    const lineSub = calcLineSubtotal(2, 5000, 10);
+    assert.strictEqual(lineSub, 9000);
   });
 });

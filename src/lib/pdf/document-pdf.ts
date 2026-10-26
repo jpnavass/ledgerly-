@@ -394,7 +394,7 @@ export function DocumentPdf({
               e(
                 Text,
                 { style: { fontFamily: 'Helvetica-Bold', marginTop: 2 } },
-                `Huella Digital: ${document.pdf_hash ? document.pdf_hash.slice(0, 32) : 'REGISTRADA'}...`
+                `Huella Digital: ${document.signature_data ? document.signature_data.slice(0, 32) : (document.pdf_hash ? document.pdf_hash.slice(0, 32) : 'REGISTRADA')}...`
               )
             )
           )

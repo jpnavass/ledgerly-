@@ -7,6 +7,7 @@ import assert from 'node:assert/strict';
 import type Stripe from 'stripe';
 import {
   processStripeEvent,
+  constructWebhookEvent,
   resetProcessedWebhookEvents,
   type WebhookRepositoryTarget,
 } from '../stripe-webhook.ts';
@@ -149,5 +150,24 @@ describe('Webhooks de Stripe: Idempotencia y Actualización de Licencias', () =>
     const updated = storedLicenses.get('org-empresa-4');
     assert(updated);
     assert.strictEqual(updated.is_active, false);
+  });
+
+  it('firma inválida de webhook es rechazada con excepción', () => {
+    const fakeStripe = {
+      webhooks: {
+        constructEvent(payload: string, signature: string, secret: string) {
+          if (signature !== 'valid_sig') {
+            throw new Error('No signatures found matching the expected signature for payload');
+          }
+          return { id: 'evt_1', type: 'dummy' };
+        },
+      },
+    } as unknown as Stripe;
+
+    assert.throws(
+      () =>
+        constructWebhookEvent(fakeStripe, '{"id":"evt_1"}', 'bad_sig', 'whsec_test'),
+      /No signatures found matching/
+    );
   });
 });
