@@ -57,6 +57,32 @@ Las migraciones de PostgreSQL se encuentran en `supabase/migrations/`:
 - `0003_functions.sql`: Funciones transaccionales atómicas (`next_document_number`, `issue_document`, `expire_quotes`).
 - `0004_storage.sql`: Configuración de buckets seguros (`pdfs`, `signatures`, `receipts`, `logos`).
 
+## Pruebas de Integridad SQL (PostgreSQL / Supabase)
+
+En `supabase/tests/database_integrity.sql` se proporciona la suite transaccional de pruebas reales ejecutables directamente contra un motor PostgreSQL (o Supabase Studio SQL Editor).
+
+### Cómo ejecutarlas contra base de datos real:
+
+1. **Vía Supabase CLI (entorno local con Docker):**
+   ```bash
+   supabase db execute --file supabase/tests/database_integrity.sql
+   ```
+2. **Vía `psql` directo:**
+   ```bash
+   psql "$DATABASE_URL" -f supabase/tests/database_integrity.sql
+   ```
+3. **Vía Supabase Studio:**
+   - Copiar el contenido de `supabase/tests/database_integrity.sql` en el SQL Editor y pulsar **Run**.
+
+La suite evalúa en una transacción aislada (con `ROLLBACK` final para no dejar datos residuales):
+- Aislamiento RLS estricto entre organizaciones con simulación de claims JWT de usuarios diferenciados.
+- Bloqueo por trigger de `UPDATE` y `DELETE` en `billing_records` y `audit_events` (inalterabilidad append-only).
+- Bloqueo por trigger de modificación de importes en documentos sellados (`locked_at`).
+- Bloqueo de eliminación física de documentos con número oficial asignado.
+- 50 llamadas consecutivas a `next_document_number` para verificar correlatividad estricta 1..50 sin huecos.
+
+*Nota:* Estas pruebas están diseñadas para PostgreSQL nativo. En entornos de integración continua o desarrollo local sin contenedor Docker o instancia Postgres activa, las reglas equivalentes son validadas en memoria mediante `tests/database-sql-rules.test.ts`.
+
 ## Estructura de Scripts
 
 - `npm run dev`: Servidor local de desarrollo en puerto 3000 con Next.js 15 Turbopack.
