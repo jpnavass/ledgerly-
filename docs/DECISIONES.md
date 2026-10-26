@@ -21,3 +21,20 @@
 5. `stripe`: Gestión de suscripciones y facturación periódica multi-tier.
 6. `resend`: Envío de códigos OTP de firma y notificaciones documentales por correo electrónico.
 7. `@tanstack/react-query`: Caché reactiva y sincronización de datos en cliente.
+8. `lucide-react`: Sistema iconográfico SVG vectorial ligero para interfaz y navegación de alta densidad, autorizado en la Fase 10.1 para garantizar iconografía accesible, sin dependencias pesadas ni fuentes de iconos que bloqueen el renderizado.
+
+## Decisiones de Arquitectura y Desviaciones Técnicas
+
+### 1. Versión de Next.js (16.4.3 vs 15)
+- **Contexto:** La especificación inicial mencionaba Next.js 15. Durante la inicialización del entorno se integró la versión estable 16.4.3 con Turbopack y React 19.3.0.
+- **Justificación:** Next.js 16.4.3 ofrece soporte optimizado para React 19 Compiler, resolución nativa con Node.js v22 (`--experimental-strip-types`), `cacheComponents: true` y `partialPrefetching: true`. El código no utiliza APIs obsoletas o experimentales no retrocompatibles, y la compilación de producción se ejecuta limpiamente sin advertencias.
+
+### 2. Estructura de Rutas y Vista Pública `/ver/[id]`
+- **Rutas directas en `src/app/` (`/ajustes`, `/clientes`, `/catalogo`, `/documentos`, etc.):**
+  En Next.js App Router, los Route Groups con paréntesis como `(app)` son puramente organizativos y no alteran la URL pública. Se mantuvieron directamente en la raíz de `src/app/` para simplificar la jerarquía del proyecto, evitar anidamientos redundantes y hacer explícita la correspondencia archivo-URL.
+- **Ruta `/ver/[id]`:**
+  Implementada como vista pública compartida de sólo lectura para que clientes receptores puedan revisar el documento formateado en navegador sin necesidad de autenticarse en el panel de administración, complementando el flujo formal de aceptación y firma en `/firmar/[token]`.
+
+### 3. Vigencia del Sistema de Temas, Acentos y Accesibilidad (Fase 10)
+- **Confirmación:** La parametrización de acentos, la escala tipográfica `font_scale` (100%, 110%, 125%), la persistencia en cookie `pe_ui` y la extracción de tokens semánticos a `src/styles/tokens.css` forman parte íntegra de la **Fase 10** ("Sistema de Diseño Semántico y Accesibilidad WCAG 2.1 / 2.2 AA") de la versión 2 vigente de la especificación técnica.
+- `globals.css` se redujo deliberadamente para delegar la semántica de color y variables a `tokens.css`, asegurando paridad exacta entre `@media (prefers-color-scheme: dark)` y el atributo `[data-theme="dark"]`.
