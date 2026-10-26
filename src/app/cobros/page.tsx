@@ -23,31 +23,40 @@ import Link from 'next/link';
 export default function PaymentsPage() {
   const [payments, setPayments] = useState<Payment[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const org = getOrganization();
 
-  useEffect(() => {
-    let mounted = true;
-    async function load() {
-      setLoading(true);
-      const repo = getRepository();
-      const orgId = org?.id || 'org-main';
-      try {
-        const data = await repo.getPayments(orgId);
-        if (mounted) setPayments(data);
-      } catch (err) {
-        console.warn('Carga de pagos diferida:', err);
-        if (mounted) setPayments(getPayments());
-      } finally {
-        if (mounted) setLoading(false);
+  const load = async () => {
+    setLoading(true);
+    const isSupabase = typeof process !== 'undefined' && Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL);
+    const repo = getRepository();
+    const orgId = org?.id || '';
+    try {
+      if (!orgId && isSupabase) {
+        throw new Error('No se ha detectado una organización activa vinculada a la sesión.');
       }
+      const data = await repo.getPayments(orgId);
+      setPayments(data);
+      setLoadError(null);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Error al sincronizar cobros con el repositorio.';
+      if (isSupabase) {
+        setLoadError(msg);
+        setPayments([]);
+      } else {
+        setPayments(getPayments());
+      }
+    } finally {
+      setLoading(false);
     }
+  };
 
+  useEffect(() => {
     load();
     const handleUpdate = () => load();
     window.addEventListener('pe_store_updated', handleUpdate);
     window.addEventListener('storage', handleUpdate);
     return () => {
-      mounted = false;
       window.removeEventListener('pe_store_updated', handleUpdate);
       window.removeEventListener('storage', handleUpdate);
     };
@@ -69,6 +78,14 @@ export default function PaymentsPage() {
   return (
     <AppLayout>
       <div className="p-5 md:p-8 max-w-[1440px] mx-auto space-y-6 animate-fade-in">
+        {loadError && (
+          <div className="p-4 bg-rose-500/10 border border-rose-500/30 rounded-xl flex items-center justify-between gap-4">
+            <p className="text-sm text-rose-300">{loadError}</p>
+            <button onClick={load} className="btn btn-secondary btn-sm flex-shrink-0">
+              Reintentar
+            </button>
+          </div>
+        )}
         {/* Cabecera */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
@@ -130,7 +147,7 @@ export default function PaymentsPage() {
         </div>
 
         {/* Tabla de Hitos de Pago */}
-        <div className="bg-[#0C0E18] border border-white/10 rounded-2xl shadow-xl overflow-hidden">
+        <div className="bg-[var(--bg-surface)] border border-white/10 rounded-2xl shadow-xl overflow-hidden">
           <div className="p-5 border-b border-white/10">
             <h2 className="text-base font-bold text-white">Calendario de Cobros Contractuales</h2>
             <p className="text-xs text-gray-400 mt-0.5">

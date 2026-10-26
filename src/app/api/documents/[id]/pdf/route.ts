@@ -19,6 +19,13 @@ export async function GET(
       return NextResponse.json({ error: 'Documento no encontrado.' }, { status: 404 });
     }
 
+    if (!doc.org_id) {
+      return NextResponse.json(
+        { error: 'El documento no tiene una organización asignada.' },
+        { status: 400 }
+      );
+    }
+
     const org = await repo.getOrganization(doc.org_id);
     if (!org) {
       return NextResponse.json({ error: 'Entidad emisora no encontrada.' }, { status: 404 });
@@ -42,7 +49,7 @@ export async function GET(
 
     const filename = `${doc.series || 'DOC'}_${doc.number || 'borrador'}.pdf`;
 
-    return new NextResponse(buffer as any, {
+    return new NextResponse(new Uint8Array(buffer), {
       status: 200,
       headers: {
         'Content-Type': 'application/pdf',

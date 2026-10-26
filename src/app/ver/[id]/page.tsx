@@ -39,9 +39,9 @@ function ClientViewContent({ params }: { params: Promise<{ id: string }> }) {
     async function loadDoc() {
       const repo = getRepository();
       const currentOrg = getOrganization();
-      const orgId = currentOrg?.id || 'org-main';
+      const orgId = currentOrg?.id || '';
       try {
-        const currentDoc = (await repo.getDocumentById(orgId, docId)) || getDocumentById(docId);
+        const currentDoc = (orgId ? await repo.getDocumentById(orgId, docId) : null) || (await repo.findDocumentByTokenOrId(docId)) || getDocumentById(docId);
         if (mounted && currentDoc) {
           setDoc(currentDoc);
           setSignatureDone(currentDoc.status === 'accepted' || currentDoc.status === 'invoiced');
@@ -74,7 +74,7 @@ function ClientViewContent({ params }: { params: Promise<{ id: string }> }) {
 
   if (!doc) {
     return (
-      <div className="min-h-screen bg-[#08090E] text-white flex flex-col items-center justify-center p-6">
+      <div className="min-h-screen bg-[var(--bg-app)] text-white flex flex-col items-center justify-center p-6">
         <p className="text-lg font-bold">Documento no disponible o enlace caducado.</p>
         <p className="text-xs text-gray-400 mt-2">Por favor contacte con {org?.name || 'la empresa emisora'}.</p>
       </div>
@@ -141,9 +141,9 @@ function ClientViewContent({ params }: { params: Promise<{ id: string }> }) {
   };
 
   return (
-    <div className="min-h-screen bg-[#07090F] text-slate-100 font-sans selection:bg-indigo-500/30">
+    <div className="min-h-screen bg-[var(--bg-app)] text-slate-100 font-sans selection:bg-indigo-500/30">
       {/* Barra de Certificación de Seguridad */}
-      <header className="sticky top-0 z-40 bg-[#0B0E18]/90 backdrop-blur-md border-b border-white/10 px-4 md:px-8 py-3.5 flex items-center justify-between no-print">
+      <header className="sticky top-0 z-40 bg-[var(--bg-surface)]/90 backdrop-blur-md border-b border-white/10 px-4 md:px-8 py-3.5 flex items-center justify-between no-print">
         <div className="flex items-center gap-3">
           <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center font-bold text-white font-mono text-sm shadow-md">
             IP
@@ -185,7 +185,7 @@ function ClientViewContent({ params }: { params: Promise<{ id: string }> }) {
       {/* Modal de Firma Electrónica */}
       {signingModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in no-print">
-          <div className="w-full max-w-lg bg-[#0F1322] border border-white/20 rounded-2xl shadow-2xl p-6 space-y-4">
+          <div className="w-full max-w-lg bg-[var(--bg-elevated)] border border-white/20 rounded-2xl shadow-2xl p-6 space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-white/10">
               <div>
                 <h3 className="font-bold text-white text-base">Formalización y Firma Electrónica</h3>
@@ -209,7 +209,7 @@ function ClientViewContent({ params }: { params: Promise<{ id: string }> }) {
                     placeholder="Ej. Carlos Mendoza"
                     value={signerName}
                     onChange={(e) => setSignerName(e.target.value)}
-                    className="input bg-[#141828] border-white/15 text-xs"
+                    className="input bg-[var(--bg-surface-2)] border-white/15 text-xs"
                   />
                 </div>
                 <div>
@@ -220,7 +220,7 @@ function ClientViewContent({ params }: { params: Promise<{ id: string }> }) {
                     placeholder="Ej. 12345678A"
                     value={signerTaxId}
                     onChange={(e) => setSignerTaxId(e.target.value)}
-                    className="input bg-[#141828] border-white/15 text-xs font-mono"
+                    className="input bg-[var(--bg-surface-2)] border-white/15 text-xs font-mono"
                   />
                 </div>
               </div>
@@ -447,8 +447,8 @@ function ClientViewContent({ params }: { params: Promise<{ id: string }> }) {
                       <span>✓</span>
                       <span>
                         {doc.signature_data?.startsWith('data:image/')
-                          ? 'Firma digital eIDAS registrada con sello de tiempo criptográfico SHA-256'
-                          : doc.signature_data || 'Firma electrónica verificada con sello de tiempo'}
+                          ? 'Firma electrónica simple (eIDAS Art. 25.1) registrada con hash SHA-256'
+                          : doc.signature_data || 'Firma electrónica simple verificada'}
                       </span>
                     </p>
                   </div>
@@ -480,7 +480,7 @@ export default function ClientViewPage(props: { params: Promise<{ id: string }> 
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen bg-[#07090F] flex items-center justify-center text-gray-400">
+        <div className="min-h-screen bg-[var(--bg-app)] flex items-center justify-center text-gray-400">
           Cargando documento seguro...
         </div>
       }

@@ -32,8 +32,8 @@ import type { Document } from '@/types';
 import {
   DOC_TYPE_LABELS,
   DOC_STATUS_LABELS,
-  DOC_STATUS_COLORS,
 } from '@/types';
+import { Badge } from '@/components/ui/Badge';
 import Link from 'next/link';
 
 export default function DashboardPage() {
@@ -138,7 +138,7 @@ export default function DashboardPage() {
         )}
 
         {/* Banner de Bienvenida y Empresa */}
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 p-6 rounded-2xl bg-gradient-to-r from-[#101424] via-[#12162A] to-[#151930] border border-white/10 shadow-xl">
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 p-6 rounded-2xl bg-gradient-to-r from-[var(--bg-surface)] via-[var(--bg-surface-2)] to-[var(--bg-surface-2)] border border-white/10 shadow-xl">
           <div className="space-y-1.5">
             <div className="flex items-center gap-2">
               <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold font-mono tracking-wide uppercase bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
@@ -248,7 +248,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Tabla de Documentos Recientes */}
-        <div className="bg-[#0C0E18] border border-white/10 rounded-2xl shadow-xl overflow-hidden">
+        <div className="bg-[var(--bg-surface)] border border-white/10 rounded-2xl shadow-xl overflow-hidden">
           <div className="p-5 border-b border-white/10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
               <h2 className="text-base font-bold text-white tracking-tight">
@@ -320,7 +320,6 @@ export default function DashboardPage() {
                 </thead>
                 <tbody>
                   {filteredDocs.map((doc) => {
-                    const statusColor = DOC_STATUS_COLORS[doc.status] || { bg: 'rgba(255,255,255,0.05)', text: '#CBD5E1' };
                     const code = doc.series
                       ? `${doc.series}-${String(doc.number || doc.doc_number || 0).padStart(4, '0')}`
                       : 'BORRADOR';
@@ -366,19 +365,7 @@ export default function DashboardPage() {
 
                         {/* Estado */}
                         <td>
-                          <span
-                            className="badge"
-                            style={{
-                              background: statusColor.bg,
-                              color: statusColor.text,
-                              border: `1px solid ${statusColor.text}40`,
-                            }}
-                          >
-                            {doc.status === 'accepted' && <CheckCircle2 size={12} />}
-                            {doc.status === 'viewed' && <Eye size={12} />}
-                            {doc.status === 'sent' && <Send size={12} />}
-                            {DOC_STATUS_LABELS[doc.status]}
-                          </span>
+                          <Badge status={doc.status} />
                         </td>
 
                         {/* Total */}

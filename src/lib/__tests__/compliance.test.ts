@@ -51,7 +51,8 @@ describe('Cumplimiento Normativo y Registros Inalterables (compliance.ts)', () =
     assert.strictEqual(calculatedHash, '3C464DAF61ACB827C65FDA19F352A4E3BDC2C640E9E9FC4CC058073F38F12F60');
   });
 
-  it('vector oficial AEAT para registro de anulación (Fuente: Orden HAC/1177/2024, Art. 13 y Anexo II)', async () => {
+  it('registro de anulación: vector derivado, pendiente de contraste con el oficial', async () => {
+    // Vector calculado a partir de la especificación técnica de campos de anulación (pendiente de contraste con vector publicado por AEAT)
     const payload = formatAeatCancellationPayload({
       taxId: '89890001K',
       seriesNumber: '12345678/G33',
@@ -69,7 +70,8 @@ describe('Cumplimiento Normativo y Registros Inalterables (compliance.ts)', () =
     assert.strictEqual(calculatedHash, '04ADDC2B4586CD1A9F8D431E453D78E92BF99DF5C1906C257B46A367876DEFA6');
   });
 
-  it('vector oficial AEAT para registro de eventos (Fuente: Orden HAC/1177/2024, Anexo III)', async () => {
+  it('registro de eventos: vector derivado, pendiente de contraste con el oficial', async () => {
+    // Vector calculado a partir del formato de eventos de especificación técnica (pendiente de contraste con vector publicado por AEAT)
     const payload = formatAeatEventPayload({
       softwareVersion: '2.0.0',
       eventType: '01',

@@ -22,6 +22,9 @@ const FORBIDDEN_LITERAL_TERMS = [
   'antigravity',
   'prompt',
   'org-001',
+  'org-main',
+  'org-default',
+  'org-demo',
 ];
 
 // Expresiones regulares con límites de palabra Unicode para no romper palabras con tildes (ej. método)
@@ -82,6 +85,28 @@ function checkFileContent(filePath, relativePath) {
         term: 'localStorage',
         reason: 'Uso de localStorage prohibido fuera de lib/repo/local.ts',
       });
+    }
+  }
+
+  // 5. Literales de color fuera de tokens.css, lib/theme/, lib/pdf/ y estilos de impresión
+  if (normalizedPath.startsWith('src/') && (normalizedPath.endsWith('.ts') || normalizedPath.endsWith('.tsx') || normalizedPath.endsWith('.css'))) {
+    const isAllowedColorPath =
+      normalizedPath.includes('styles/tokens.css') ||
+      normalizedPath.includes('styles/print.css') ||
+      normalizedPath.includes('lib/theme/') ||
+      normalizedPath.includes('lib/pdf/') ||
+      normalizedPath.includes('lib/compliance/qr.ts') || // Generador de código QR fiscal AEAT (blanco y negro obligatorio)
+      normalizedPath.endsWith('layout.tsx') || // meta theme-color requeridos por HTML
+      normalizedPath.endsWith('page.tsx');    // vistas con firmas en canvas
+    if (!isAllowedColorPath) {
+      const literalMatch = content.match(/#[0-9a-fA-F]{3,8}\b/);
+      if (literalMatch) {
+        violations.push({
+          file: relativePath,
+          term: literalMatch[0],
+          reason: `Color literal "${literalMatch[0]}" prohibido fuera de tokens.css, lib/theme/ y lib/pdf/ (Fase 10.3 / 12)`,
+        });
+      }
     }
   }
 }

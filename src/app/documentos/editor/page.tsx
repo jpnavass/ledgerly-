@@ -26,8 +26,8 @@ import type { DocumentItem, DocStatus, DocType, Document } from '@/types';
 import {
   DOC_TYPE_LABELS,
   DOC_STATUS_LABELS,
-  DOC_STATUS_COLORS,
 } from '@/types';
+import { Badge } from '@/components/ui/Badge';
 import {
   Save,
   ArrowLeft,
@@ -339,7 +339,7 @@ function EditorContent() {
         )}
 
         {/* Barra Superior del Editor */}
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 p-4 rounded-2xl bg-[#0D101A] border border-white/10 shadow-lg no-print">
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 p-4 rounded-2xl bg-[var(--bg-surface)] border border-white/10 shadow-lg no-print">
           <div className="flex items-center gap-3">
             <Link
               href="/documentos"
@@ -355,17 +355,7 @@ function EditorContent() {
                   {code}
                 </span>
                 <span className="text-xs font-mono text-gray-400">Versión {doc.version || 1}.0</span>
-                <span
-                  className="badge ml-1"
-                  style={{
-                    background: DOC_STATUS_COLORS[status]?.bg,
-                    color: DOC_STATUS_COLORS[status]?.text,
-                    border: `1px solid ${DOC_STATUS_COLORS[status]?.text}40`,
-                  }}
-                >
-                  {status === 'accepted' && <CheckCircle2 size={12} />}
-                  {DOC_STATUS_LABELS[status]}
-                </span>
+                <Badge status={status} className="ml-1" />
               </div>
               <input
                 type="text"
@@ -495,7 +485,7 @@ function EditorContent() {
             {/* Columna Izquierda: Líneas y Partidas (2/3) */}
             <div className="lg:col-span-2 space-y-6">
               {!isLocked && (
-                <div className="flex flex-wrap items-center justify-between gap-3 p-4 rounded-xl bg-[#0D101A] border border-white/10">
+                <div className="flex flex-wrap items-center justify-between gap-3 p-4 rounded-xl bg-[var(--bg-surface)] border border-white/10">
                   <div className="flex items-center gap-2">
                     <button onClick={() => addLine()} className="btn btn-primary btn-sm">
                       <Plus size={15} />
@@ -517,7 +507,7 @@ function EditorContent() {
                           e.target.value = '';
                         }
                       }}
-                      className="input bg-[#131726] border-white/10 text-xs py-1.5 px-2 max-w-[220px]"
+                      className="input bg-[var(--bg-surface-2)] border-white/10 text-xs py-1.5 px-2 max-w-[220px]"
                       defaultValue=""
                     >
                       <option value="" disabled>
@@ -580,8 +570,8 @@ function EditorContent() {
                         key={item.id}
                         className={`p-4 rounded-xl border transition-all ${
                           item.is_optional
-                            ? 'bg-[#0E101B]/50 border-amber-500/20'
-                            : 'bg-[#0E111C] border-white/10'
+                            ? 'bg-[var(--bg-surface-2)]/50 border-amber-500/20'
+                            : 'bg-[var(--bg-surface)] border-white/10'
                         }`}
                       >
                         <div className="space-y-3">
@@ -617,7 +607,7 @@ function EditorContent() {
                                 onChange={(e) =>
                                   updateItem(item.id, { quantity: parseFloat(e.target.value) || 0 })
                                 }
-                                className="input bg-[#121626] text-center font-mono py-1 px-2 text-xs"
+                                className="input bg-[var(--bg-surface-2)] text-center font-mono py-1 px-2 text-xs"
                               />
                             </div>
 
@@ -628,7 +618,7 @@ function EditorContent() {
                                 disabled={isLocked}
                                 value={item.unit}
                                 onChange={(e) => updateItem(item.id, { unit: e.target.value })}
-                                className="input bg-[#121626] text-center py-1 px-1 text-xs"
+                                className="input bg-[var(--bg-surface-2)] text-center py-1 px-1 text-xs"
                                 placeholder="ud"
                               />
                             </div>
@@ -645,7 +635,7 @@ function EditorContent() {
                                     price_cents: eurosToCents(parseFloat(e.target.value) || 0),
                                   })
                                 }
-                                className="input bg-[#121626] font-mono text-right py-1 px-2 text-xs"
+                                className="input bg-[var(--bg-surface-2)] font-mono text-right py-1 px-2 text-xs"
                               />
                             </div>
 
@@ -662,7 +652,7 @@ function EditorContent() {
                                     discount_pct: parseFloat(e.target.value) || 0,
                                   })
                                 }
-                                className="input bg-[#121626] text-center font-mono py-1 px-1 text-xs"
+                                className="input bg-[var(--bg-surface-2)] text-center font-mono py-1 px-1 text-xs"
                               />
                             </div>
 
@@ -731,7 +721,7 @@ function EditorContent() {
             {/* Columna Derecha: Configuración Fiscal y Resumen (1/3) */}
             <div className="space-y-6">
               {/* Bloque del Cliente */}
-              <div className="card-static p-5 bg-[#0D101A] border border-white/10 rounded-2xl space-y-4">
+              <div className="card-static p-5 bg-[var(--bg-surface)] border border-white/10 rounded-2xl space-y-4">
                 <h3 className="font-bold text-sm text-white flex items-center gap-2">
                   <Building2 size={16} className="text-indigo-400" />
                   <span>Destinatario Oficial</span>
@@ -743,7 +733,7 @@ function EditorContent() {
                     value={clientId}
                     disabled={isLocked}
                     onChange={(e) => setClientId(e.target.value)}
-                    className="input bg-[#121626] border-white/10 text-xs disabled:opacity-75"
+                    className="input bg-[var(--bg-surface-2)] border-white/10 text-xs disabled:opacity-75"
                   >
                     <option value="" disabled>Selecciona un cliente...</option>
                     {clients.map((c) => (
@@ -776,13 +766,13 @@ function EditorContent() {
                     disabled={isLocked}
                     value={validUntil}
                     onChange={(e) => setValidUntil(e.target.value)}
-                    className="input bg-[#121626] border-white/10 text-xs font-mono disabled:opacity-75"
+                    className="input bg-[var(--bg-surface-2)] border-white/10 text-xs font-mono disabled:opacity-75"
                   />
                 </div>
               </div>
 
               {/* Desglose Económico y Rentabilidad */}
-              <div className="card-static p-5 bg-[#0D101A] border border-white/10 rounded-2xl space-y-3">
+              <div className="card-static p-5 bg-[var(--bg-surface)] border border-white/10 rounded-2xl space-y-3">
                 <h3 className="font-bold text-sm text-white pb-2 border-b border-white/10">
                   Desglose Fiscal y Rentabilidad
                 </h3>
@@ -858,7 +848,7 @@ function EditorContent() {
               </div>
 
               {/* Condiciones y notas */}
-              <div className="card-static p-5 bg-[#0D101A] border border-white/10 rounded-2xl space-y-2">
+              <div className="card-static p-5 bg-[var(--bg-surface)] border border-white/10 rounded-2xl space-y-2">
                 <label className="text-xs font-semibold text-gray-300 block">
                   Condiciones Contractuales
                 </label>
@@ -868,7 +858,7 @@ function EditorContent() {
                   value={notesPublic}
                   onChange={(e) => setNotesPublic(e.target.value)}
                   placeholder="Condiciones de pago, validez de oferta y entrega..."
-                  className="input bg-[#121626] border-white/10 text-xs w-full disabled:opacity-75"
+                  className="input bg-[var(--bg-surface-2)] border-white/10 text-xs w-full disabled:opacity-75"
                 />
               </div>
             </div>

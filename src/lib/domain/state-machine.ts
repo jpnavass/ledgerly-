@@ -62,7 +62,6 @@ const ALLOWED_TRANSITIONS: Record<DocType, Partial<Record<DocStatus, readonly Do
  * Evalúa de forma pura si una transición de estado está permitida para un tipo de documento.
  */
 export function canTransition(docType: DocType, from: DocStatus, to: DocStatus): boolean {
-  if (from === to) return true; // idempotente
   const typeTransitions = ALLOWED_TRANSITIONS[docType];
   if (!typeTransitions) return false;
   const allowed = typeTransitions[from];

@@ -16,6 +16,7 @@ import {
   FileText,
   ShieldCheck,
   ChevronRight,
+  ChevronLeft,
   X,
   Upload,
   Download,
@@ -29,26 +30,39 @@ export default function ClientsPage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [importModalOpen, setImportModalOpen] = useState(false);
   const [clients, setClients] = useState<Client[]>([]);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 8;
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
-  useEffect(() => {
-    let mounted = true;
-    async function loadData() {
-      const repo = getRepository();
-      const currentOrg = getOrganization();
-      const orgId = currentOrg?.id || 'org-main';
-      try {
-        const data = await repo.getClients(orgId);
-        if (mounted) setClients(data);
-      } catch (e) {
-        if (mounted) setClients(getClients());
+  const loadData = async () => {
+    const isSupabase = typeof process !== 'undefined' && Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL);
+    const repo = getRepository();
+    const currentOrg = getOrganization();
+    const orgId = currentOrg?.id || '';
+    try {
+      if (!orgId && isSupabase) {
+        throw new Error('No se ha detectado una organización activa vinculada a la sesión.');
+      }
+      const data = await repo.getClients(orgId);
+      setClients(data);
+      setLoadError(null);
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : 'Error al sincronizar clientes con el repositorio.';
+      if (isSupabase) {
+        setLoadError(msg);
+        setClients([]);
+      } else {
+        setClients(getClients());
       }
     }
+  };
+
+  useEffect(() => {
     loadData();
     const handleUpdate = () => loadData();
     window.addEventListener('pe_store_updated', handleUpdate);
     return () => {
-      mounted = false;
       window.removeEventListener('pe_store_updated', handleUpdate);
     };
   }, []);
@@ -98,7 +112,7 @@ export default function ClientsPage() {
     const org = getOrganization();
     const newClient: Client = {
       id: `cli-${crypto.randomUUID()}`,
-      org_id: org?.id || 'org-main',
+      org_id: org?.id || '',
       name: newName.trim(),
       tax_id: val.normalized || newTaxId.trim().toUpperCase(),
       email: newEmail.trim() || undefined,
@@ -225,7 +239,7 @@ export default function ClientsPage() {
     for (const r of csvPreview.validRows) {
       const client: Client = {
         id: `cli-${crypto.randomUUID()}`,
-        org_id: org?.id || 'org-main',
+        org_id: org?.id || '',
         name: r.name!,
         tax_id: r.tax_id!,
         email: r.email,
@@ -271,6 +285,14 @@ export default function ClientsPage() {
   return (
     <AppLayout>
       <div className="p-5 md:p-8 max-w-[1440px] mx-auto space-y-6 animate-fade-in">
+        {loadError && (
+          <div className="p-4 bg-rose-500/10 border border-rose-500/30 rounded-xl flex items-center justify-between gap-4">
+            <p className="text-sm text-rose-300">{loadError}</p>
+            <button onClick={loadData} className="btn btn-secondary btn-sm flex-shrink-0">
+              Reintentar
+            </button>
+          </div>
+        )}
         {/* Cabecera */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
@@ -353,7 +375,7 @@ export default function ClientsPage() {
         </div>
 
         {/* Buscador */}
-        <div className="card-static p-4 bg-[#0C0E18] border border-white/10 rounded-2xl">
+        <div className="card-static p-4 bg-[var(--bg-surface)] border border-white/10 rounded-2xl">
           <div className="relative">
             <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
             <input
@@ -368,14 +390,15 @@ export default function ClientsPage() {
 
         {/* Listado de Clientes o Estados Vacíos */}
         {filtered.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {filtered.map((client) => {
-              const stats = docCounts.get(client.id) || { count: 0, total: 0 };
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {filtered.slice((currentPage - 1) * pageSize, currentPage * pageSize).map((client) => {
+                const stats = docCounts.get(client.id) || { count: 0, total: 0 };
 
               return (
                 <div
                   key={client.id}
-                  className="p-5 rounded-2xl bg-[#0D101A] border border-white/10 hover:border-white/20 transition-all space-y-4 group"
+                  className="p-5 rounded-2xl bg-[var(--bg-surface)] border border-white/10 hover:border-white/20 transition-all space-y-4 group"
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex items-center gap-3">
@@ -442,7 +465,40 @@ export default function ClientsPage() {
               );
             })}
           </div>
-        ) : (
+
+          {Math.ceil(filtered.length / pageSize) > 1 && (
+            <div className="flex items-center justify-between pt-4 border-t border-white/10 text-xs text-gray-400">
+              <span>
+                Mostrando {(currentPage - 1) * pageSize + 1} a{' '}
+                {Math.min(currentPage * pageSize, filtered.length)} de {filtered.length} clientes
+              </span>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                  className="btn btn-secondary btn-sm p-1.5 disabled:opacity-30"
+                  title="Página anterior"
+                >
+                  <ChevronLeft size={16} />
+                </button>
+                <span className="font-mono px-2">
+                  {currentPage} / {Math.ceil(filtered.length / pageSize)}
+                </span>
+                <button
+                  onClick={() =>
+                    setCurrentPage((p) => Math.min(Math.ceil(filtered.length / pageSize), p + 1))
+                  }
+                  disabled={currentPage === Math.ceil(filtered.length / pageSize)}
+                  className="btn btn-secondary btn-sm p-1.5 disabled:opacity-30"
+                  title="Página siguiente"
+                >
+                  <ChevronRight size={16} />
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      ) : (
           <div className="empty-state my-8">
             <div className="empty-state-icon">
               <Building2 size={26} />
@@ -492,7 +548,7 @@ export default function ClientsPage() {
                     placeholder="Ej. Construcciones y Proyectos Alarcón S.L."
                     value={newName}
                     onChange={(e) => setNewName(e.target.value)}
-                    className="input bg-[#121626] border-white/10 text-xs"
+                    className="input bg-[var(--bg-surface-2)] border-white/10 text-xs"
                   />
                 </div>
 
@@ -507,7 +563,7 @@ export default function ClientsPage() {
                       onChange={(e) => setNewTaxId(e.target.value)}
                       onBlur={handleTaxIdBlur}
                       aria-invalid={taxIdError ? 'true' : 'false'}
-                      className="input bg-[#121626] border-white/10 text-xs font-mono"
+                      className="input bg-[var(--bg-surface-2)] border-white/10 text-xs font-mono"
                     />
                     {taxIdError && <span className="field-error">{taxIdError}</span>}
                   </div>
@@ -518,7 +574,7 @@ export default function ClientsPage() {
                       placeholder="+34 91 000 00 00"
                       value={newPhone}
                       onChange={(e) => setNewPhone(e.target.value)}
-                      className="input bg-[#121626] border-white/10 text-xs"
+                      className="input bg-[var(--bg-surface-2)] border-white/10 text-xs"
                     />
                   </div>
                 </div>
@@ -530,7 +586,7 @@ export default function ClientsPage() {
                     placeholder="administracion@empresa.es"
                     value={newEmail}
                     onChange={(e) => setNewEmail(e.target.value)}
-                    className="input bg-[#121626] border-white/10 text-xs"
+                    className="input bg-[var(--bg-surface-2)] border-white/10 text-xs"
                   />
                 </div>
 
@@ -541,7 +597,7 @@ export default function ClientsPage() {
                     placeholder="Av. de la Constitución, 45, 2º B"
                     value={newAddress}
                     onChange={(e) => setNewAddress(e.target.value)}
-                    className="input bg-[#121626] border-white/10 text-xs"
+                    className="input bg-[var(--bg-surface-2)] border-white/10 text-xs"
                   />
                 </div>
 
@@ -553,7 +609,7 @@ export default function ClientsPage() {
                       placeholder="28001"
                       value={newPostalCode}
                       onChange={(e) => setNewPostalCode(e.target.value)}
-                      className="input bg-[#121626] border-white/10 text-xs font-mono"
+                      className="input bg-[var(--bg-surface-2)] border-white/10 text-xs font-mono"
                     />
                   </div>
                   <div className="field">
@@ -563,7 +619,7 @@ export default function ClientsPage() {
                       placeholder="Madrid"
                       value={newCity}
                       onChange={(e) => setNewCity(e.target.value)}
-                      className="input bg-[#121626] border-white/10 text-xs"
+                      className="input bg-[var(--bg-surface-2)] border-white/10 text-xs"
                     />
                   </div>
                   <div className="field">
@@ -573,7 +629,7 @@ export default function ClientsPage() {
                       placeholder="Madrid"
                       value={newProvince}
                       onChange={(e) => setNewProvince(e.target.value)}
-                      className="input bg-[#121626] border-white/10 text-xs"
+                      className="input bg-[var(--bg-surface-2)] border-white/10 text-xs"
                     />
                   </div>
                 </div>
@@ -585,7 +641,7 @@ export default function ClientsPage() {
                     placeholder="Condiciones comerciales o notas de entrega..."
                     value={newNotes}
                     onChange={(e) => setNewNotes(e.target.value)}
-                    className="input bg-[#121626] border-white/10 text-xs"
+                    className="input bg-[var(--bg-surface-2)] border-white/10 text-xs"
                   />
                 </div>
 

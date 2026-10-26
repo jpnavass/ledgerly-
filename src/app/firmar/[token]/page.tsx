@@ -161,7 +161,7 @@ function SignDocumentContent() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#0A0D14] flex flex-col items-center justify-center text-slate-300 gap-3">
+      <div className="min-h-screen bg-[var(--bg-app)] flex flex-col items-center justify-center text-slate-300 gap-3">
         <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
         <span className="text-xs">Cargando sesión de firma electrónica segura…</span>
       </div>
@@ -170,8 +170,8 @@ function SignDocumentContent() {
 
   if (error && !document) {
     return (
-      <div className="min-h-screen bg-[#0A0D14] flex items-center justify-center px-4">
-        <div className="max-w-md w-full bg-[#111622] border border-rose-500/30 rounded-2xl p-6 text-center space-y-4">
+      <div className="min-h-screen bg-[var(--bg-app)] flex items-center justify-center px-4">
+        <div className="max-w-md w-full bg-[var(--bg-surface)] border border-rose-500/30 rounded-2xl p-6 text-center space-y-4">
           <div className="w-12 h-12 rounded-full bg-rose-500/15 text-rose-400 flex items-center justify-center mx-auto">
             <AlertCircle className="w-6 h-6" />
           </div>
@@ -184,8 +184,8 @@ function SignDocumentContent() {
 
   if (signatureCompleted) {
     return (
-      <div className="min-h-screen bg-[#0A0D14] flex items-center justify-center px-4 py-12">
-        <div className="max-w-lg w-full bg-[#111622] border border-emerald-500/30 rounded-2xl p-8 text-center space-y-6 shadow-2xl">
+      <div className="min-h-screen bg-[var(--bg-app)] flex items-center justify-center px-4 py-12">
+        <div className="max-w-lg w-full bg-[var(--bg-surface)] border border-emerald-500/30 rounded-2xl p-8 text-center space-y-6 shadow-2xl">
           <div className="w-14 h-14 rounded-full bg-emerald-500/15 text-emerald-400 flex items-center justify-center mx-auto border border-emerald-500/30">
             <CheckCircle2 className="w-8 h-8" />
           </div>
@@ -212,7 +212,7 @@ function SignDocumentContent() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0A0D14] text-slate-100 px-4 py-8 flex flex-col items-center">
+    <div className="min-h-screen bg-[var(--bg-app)] text-slate-100 px-4 py-8 flex flex-col items-center">
       <div className="w-full max-w-2xl space-y-6">
         {/* Cabecera del Portal de Firma */}
         <div className="flex items-center justify-between border-b border-slate-800 pb-4">
@@ -245,7 +245,7 @@ function SignDocumentContent() {
         )}
 
         {/* Resumen del Contrato / Partidas */}
-        <div className="bg-[#111622] border border-slate-800 rounded-2xl p-5 space-y-4">
+        <div className="bg-[var(--bg-surface)] border border-slate-800 rounded-2xl p-5 space-y-4">
           <h2 className="text-xs font-semibold text-slate-300 uppercase tracking-wider flex items-center gap-2">
             <FileText size={15} className="text-blue-400" />
             <span>Detalle de Partidas Incluidas</span>
@@ -269,7 +269,7 @@ function SignDocumentContent() {
         </div>
 
         {/* Formulario de Firma */}
-        <form onSubmit={handleSubmitSignature} className="bg-[#111622] border border-slate-800 rounded-2xl p-6 space-y-5">
+        <form onSubmit={handleSubmitSignature} className="bg-[var(--bg-surface)] border border-slate-800 rounded-2xl p-6 space-y-5">
           <h2 className="text-xs font-semibold text-slate-300 uppercase tracking-wider flex items-center gap-2">
             <PenLine size={15} className="text-blue-400" />
             <span>Datos y Rúbrica del Firmante</span>
@@ -380,7 +380,7 @@ export default function SignDocumentPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen bg-[#0A0D14] flex flex-col items-center justify-center text-slate-300 gap-3">
+        <div className="min-h-screen bg-[var(--bg-app)] flex flex-col items-center justify-center text-slate-300 gap-3">
           <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
           <span className="text-xs">Cargando sesión de firma electrónica segura…</span>
         </div>

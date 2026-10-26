@@ -23,11 +23,11 @@ describe('Máquina de Estados Documental (state-machine.ts)', () => {
     'void',
   ];
 
-  it('toda transición a sí misma es válida (idempotente)', () => {
+  it('transición a sí misma es rechazada si no está explícitamente definida en la matriz', () => {
     for (const dt of allDocTypes) {
       for (const st of allStatuses) {
-        assert.strictEqual(canTransition(dt, st, st), true);
-        assert.doesNotThrow(() => assertCanTransition(dt, st, st));
+        assert.strictEqual(canTransition(dt, st, st), false);
+        assert.throws(() => assertCanTransition(dt, st, st), InvalidTransitionError);
       }
     }
   });

@@ -12,12 +12,17 @@ DECLARE
   v_test_org_a UUID := gen_random_uuid();
   v_test_org_b UUID := gen_random_uuid();
   v_test_user_a UUID := gen_random_uuid();
+  v_test_user_b UUID := gen_random_uuid();
   v_doc_locked_id UUID := gen_random_uuid();
   v_doc_numbered_id UUID := gen_random_uuid();
+  v_doc_org_b_id UUID := gen_random_uuid();
   v_billing_rec_id UUID := gen_random_uuid();
   v_audit_evt_id UUID := gen_random_uuid();
   v_err_caught BOOLEAN;
   v_count INT;
+  v_rows_visible_a INT;
+  v_rows_visible_b INT;
+  v_rows_updated INT;
   v_seq_numbers INT[];
   v_num INT;
   i INT;
@@ -154,7 +159,56 @@ BEGIN
   RAISE NOTICE '[OK] Test 6: Numeración atómica verificada — 50 emisiones generaron correlativos 1..50 estrictos sin saltos ni huecos';
 
   -- --------------------------------------------------------------------------
-  -- TEST 7: Aislamiento RLS (Políticas activas en tablas)
+  -- TEST 7: Aislamiento Multitenant RLS con Usuarios y JWT Claims Reales
+  -- --------------------------------------------------------------------------
+  -- 1. Crear membresías: Usuario A en Org A, y Usuario B en Org B
+  INSERT INTO memberships (id, org_id, user_id, role)
+  VALUES 
+    (gen_random_uuid(), v_test_org_a, v_test_user_a, 'owner'),
+    (gen_random_uuid(), v_test_org_b, v_test_user_b, 'owner');
+
+  -- 2. Insertar un documento en Org B
+  INSERT INTO documents (id, org_id, doc_type, series, number, status, title, subtotal_cents, vat_cents, total_cents)
+  VALUES (v_doc_org_b_id, v_test_org_b, 'quote', 'PRE', 1, 'draft', 'Presupuesto Confidencial Empresa B', 50000, 10500, 60500);
+
+  -- 3. Simular contexto de seguridad del Usuario A (Org A)
+  SET LOCAL ROLE authenticated;
+  EXECUTE format('SET LOCAL "request.jwt.claims" = ''{"sub": "%s", "role": "authenticated"}''', v_test_user_a);
+
+  -- Usuario A NO debe ver ningún documento de Org B
+  SELECT count(*) INTO v_rows_visible_a FROM documents WHERE id = v_doc_org_b_id;
+  IF v_rows_visible_a > 0 THEN
+    RAISE EXCEPTION 'TEST 7 FALLIDO: Fuga de aislamiento RLS. El Usuario A de Org A puede ver documentos de Org B';
+  END IF;
+
+  -- Usuario A NO debe poder modificar documentos de Org B
+  UPDATE documents SET title = 'Ataque Inyección' WHERE id = v_doc_org_b_id;
+  GET DIAGNOSTICS v_rows_updated = ROW_COUNT;
+  IF v_rows_updated > 0 THEN
+    RAISE EXCEPTION 'TEST 7 FALLIDO: Fuga de aislamiento RLS. El Usuario A de Org A pudo modificar un documento de Org B';
+  END IF;
+
+  -- 4. Simular contexto de seguridad del Usuario B (Org B)
+  EXECUTE format('SET LOCAL "request.jwt.claims" = ''{"sub": "%s", "role": "authenticated"}''', v_test_user_b);
+
+  -- Usuario B sí debe ver su propio documento de Org B
+  SELECT count(*) INTO v_rows_visible_b FROM documents WHERE id = v_doc_org_b_id;
+  IF v_rows_visible_b <> 1 THEN
+    RAISE EXCEPTION 'TEST 7 FALLIDO: El Usuario B de Org B no puede ver su propio documento con RLS activo';
+  END IF;
+
+  -- Usuario B NO debe ver documentos de Org A
+  SELECT count(*) INTO v_rows_visible_b FROM documents WHERE id = v_doc_locked_id;
+  IF v_rows_visible_b > 0 THEN
+    RAISE EXCEPTION 'TEST 7 FALLIDO: Fuga de aislamiento RLS. El Usuario B de Org B puede ver documentos de Org A';
+  END IF;
+
+  -- Restaurar rol de administración para el bloque final
+  RESET ROLE;
+  RAISE NOTICE '[OK] Test 7: Aislamiento Multitenant RLS verificado — Simulación JWT para Usuarios A y B confirma segregación total de lectura y escritura';
+
+  -- --------------------------------------------------------------------------
+  -- TEST 8: Verificación de Políticas RLS Activas en Tablas
   -- --------------------------------------------------------------------------
   SELECT count(*) INTO v_count
   FROM pg_tables
@@ -163,12 +217,12 @@ BEGIN
     AND rowsecurity = true;
 
   IF v_count < 6 THEN
-    RAISE EXCEPTION 'TEST 7 FALLIDO: RLS no está activo en todas las tablas clave (encontradas % de 6)', v_count;
+    RAISE EXCEPTION 'TEST 8 FALLIDO: RLS no está activo en todas las tablas clave (encontradas % de 6)', v_count;
   END IF;
-  RAISE NOTICE '[OK] Test 7: Políticas RLS verificadas — Activas en todas las tablas sensibles del sistema';
+  RAISE NOTICE '[OK] Test 8: Políticas RLS verificadas — Activas en todas las tablas sensibles del sistema';
 
   RAISE NOTICE '====================================================================';
-  RAISE NOTICE 'RESULTADO FINAL: TODAS LAS 7 PRUEBAS DE INTEGRIDAD SQL HAN PASADO';
+  RAISE NOTICE 'RESULTADO FINAL: TODAS LAS 8 PRUEBAS DE INTEGRIDAD SQL HAN PASADO';
   RAISE NOTICE '====================================================================';
 
   -- ROLLBACK para dejar la base de datos limpia al 100%

@@ -21,30 +21,41 @@ import type { CatalogItem } from '@/types';
 
 export default function CatalogPage() {
   const [catalog, setCatalog] = useState<CatalogItem[]>([]);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [modalOpen, setModalOpen] = useState(false);
   const [importModalOpen, setImportModalOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
-  useEffect(() => {
-    let mounted = true;
-    async function loadData() {
-      const repo = getRepository();
-      const currentOrg = getOrganization();
-      const orgId = currentOrg?.id || 'org-main';
-      try {
-        const data = await repo.getCatalog(orgId);
-        if (mounted) setCatalog(data);
-      } catch (e) {
-        if (mounted) setCatalog(getCatalog());
+  const loadData = async () => {
+    const isSupabase = typeof process !== 'undefined' && Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL);
+    const repo = getRepository();
+    const currentOrg = getOrganization();
+    const orgId = currentOrg?.id || '';
+    try {
+      if (!orgId && isSupabase) {
+        throw new Error('No se ha detectado una organización activa vinculada a la sesión.');
+      }
+      const data = await repo.getCatalog(orgId);
+      setCatalog(data);
+      setLoadError(null);
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : 'Error al sincronizar catálogo con el repositorio.';
+      if (isSupabase) {
+        setLoadError(msg);
+        setCatalog([]);
+      } else {
+        setCatalog(getCatalog());
       }
     }
+  };
+
+  useEffect(() => {
     loadData();
     const handleUpdate = () => loadData();
     window.addEventListener('pe_store_updated', handleUpdate);
     return () => {
-      mounted = false;
       window.removeEventListener('pe_store_updated', handleUpdate);
     };
   }, []);
@@ -102,7 +113,7 @@ export default function CatalogPage() {
 
     const newItem: CatalogItem = {
       id: `cat-${crypto.randomUUID()}`,
-      org_id: org?.id || 'org-main',
+      org_id: org?.id || '',
       category: category.trim() || 'General',
       name: name.trim(),
       description: description.trim() || undefined,
@@ -229,7 +240,7 @@ export default function CatalogPage() {
     for (const r of csvPreview.validRows) {
       const item: CatalogItem = {
         id: `cat-${crypto.randomUUID()}`,
-        org_id: org?.id || 'org-main',
+        org_id: org?.id || '',
         name: r.name!,
         category: r.category || 'General',
         description: r.description,
@@ -252,6 +263,14 @@ export default function CatalogPage() {
   return (
     <AppLayout>
       <div className="p-5 md:p-8 max-w-[1440px] mx-auto space-y-6 animate-fade-in">
+        {loadError && (
+          <div className="p-4 bg-rose-500/10 border border-rose-500/30 rounded-xl flex items-center justify-between gap-4">
+            <p className="text-sm text-rose-300">{loadError}</p>
+            <button onClick={loadData} className="btn btn-secondary btn-sm flex-shrink-0">
+              Reintentar
+            </button>
+          </div>
+        )}
         {/* Cabecera */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
@@ -305,7 +324,7 @@ export default function CatalogPage() {
         </div>
 
         {/* Barra de Filtros */}
-        <div className="card-static p-4 bg-[#0C0E18] border border-white/10 rounded-2xl flex flex-col sm:flex-row gap-3">
+        <div className="card-static p-4 bg-[var(--bg-surface)] border border-white/10 rounded-2xl flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1">
             <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
             <input
@@ -322,7 +341,7 @@ export default function CatalogPage() {
             <select
               value={categoryFilter}
               onChange={(e) => setCategoryFilter(e.target.value)}
-              className="input bg-[#121522] border-white/10 text-xs py-2 w-auto"
+              className="input bg-[var(--bg-surface-2)] border-white/10 text-xs py-2 w-auto"
             >
               {categories.map((c) => (
                 <option key={c} value={c}>
@@ -335,7 +354,7 @@ export default function CatalogPage() {
 
         {/* Listado de Partidas o Estados Vacíos */}
         {filtered.length > 0 ? (
-          <div className="bg-[#0C0E18] border border-white/10 rounded-2xl shadow-xl overflow-hidden">
+          <div className="bg-[var(--bg-surface)] border border-white/10 rounded-2xl shadow-xl overflow-hidden">
             <div className="table-container">
               <table className="table">
                 <thead>
@@ -450,7 +469,7 @@ export default function CatalogPage() {
                     placeholder="Ej. Suministro e instalación de cuadro de protección"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    className="input bg-[#121626] border-white/10 text-xs"
+                    className="input bg-[var(--bg-surface-2)] border-white/10 text-xs"
                   />
                 </div>
 
@@ -462,7 +481,7 @@ export default function CatalogPage() {
                       placeholder="Ej. Electricidad, Fontanería..."
                       value={category}
                       onChange={(e) => setCategory(e.target.value)}
-                      className="input bg-[#121626] border-white/10 text-xs"
+                      className="input bg-[var(--bg-surface-2)] border-white/10 text-xs"
                     />
                   </div>
                   <div className="field">
@@ -472,7 +491,7 @@ export default function CatalogPage() {
                       placeholder="ud, m, m2, h, kg..."
                       value={unit}
                       onChange={(e) => setUnit(e.target.value)}
-                      className="input bg-[#121626] border-white/10 text-xs font-mono"
+                      className="input bg-[var(--bg-surface-2)] border-white/10 text-xs font-mono"
                     />
                   </div>
                 </div>
@@ -484,7 +503,7 @@ export default function CatalogPage() {
                     placeholder="Especificaciones, marca, normativa de aplicación..."
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
-                    className="input bg-[#121626] border-white/10 text-xs"
+                    className="input bg-[var(--bg-surface-2)] border-white/10 text-xs"
                   />
                 </div>
 
@@ -496,7 +515,7 @@ export default function CatalogPage() {
                       placeholder="0,00"
                       value={costStr}
                       onChange={(e) => setCostStr(e.target.value)}
-                      className="input bg-[#121626] border-white/10 text-xs font-mono"
+                      className="input bg-[var(--bg-surface-2)] border-white/10 text-xs font-mono"
                     />
                   </div>
                   <div className="field">
@@ -507,7 +526,7 @@ export default function CatalogPage() {
                       placeholder="0,00"
                       value={priceStr}
                       onChange={(e) => setPriceStr(e.target.value)}
-                      className="input bg-[#121626] border-white/10 text-xs font-mono"
+                      className="input bg-[var(--bg-surface-2)] border-white/10 text-xs font-mono"
                     />
                   </div>
                   <div className="field">
@@ -515,7 +534,7 @@ export default function CatalogPage() {
                     <select
                       value={vatRate}
                       onChange={(e) => setVatRate(Number(e.target.value))}
-                      className="input bg-[#121626] border-white/10 text-xs"
+                      className="input bg-[var(--bg-surface-2)] border-white/10 text-xs"
                     >
                       <option value={21}>21% (General)</option>
                       <option value={10}>10% (Reducido)</option>

@@ -41,12 +41,68 @@ import {
   Download,
   Database,
   FileCheck,
+  Palette,
+  Sun,
+  Moon,
+  Laptop,
 } from 'lucide-react';
+import { type ThemeMode, type AccentId, type ThemeDensity, type UiPreferences, DEFAULT_UI_PREFERENCES } from '@/lib/theme/types';
+import { parseUiCookie, serializeUiCookie, UI_COOKIE_NAME } from '@/lib/theme/cookie';
 import Link from 'next/link';
 
 export default function SettingsPage() {
   const [saved, setSaved] = useState(false);
-  const [tab, setTab] = useState<'fiscal' | 'subscription' | 'members' | 'portability' | 'notifications'>('fiscal');
+  const [tab, setTab] = useState<'fiscal' | 'subscription' | 'members' | 'portability' | 'notifications' | 'appearance'>('fiscal');
+  const [uiPrefs, setUiPrefs] = useState<UiPreferences>(DEFAULT_UI_PREFERENCES);
+
+  useEffect(() => {
+    if (typeof document !== 'undefined') {
+      const prefs = parseUiCookie(document.cookie);
+      setUiPrefs(prefs);
+    }
+  }, []);
+
+  const handleUpdateUiPref = <K extends keyof UiPreferences>(key: K, val: UiPreferences[K]) => {
+    const next = { ...uiPrefs, [key]: val };
+    setUiPrefs(next);
+
+    if (typeof document !== 'undefined') {
+      document.documentElement.classList.add('theme-transition');
+      window.setTimeout(() => document.documentElement.classList.remove('theme-transition'), 160);
+
+      if (key === 'mode') {
+        if (val === 'system') delete document.documentElement.dataset.theme;
+        else document.documentElement.dataset.theme = val as string;
+      } else if (key === 'accent') {
+        document.documentElement.dataset.accent = val as string;
+      } else if (key === 'density') {
+        if (val === 'compact') document.documentElement.dataset.density = 'compact';
+        else delete document.documentElement.dataset.density;
+      } else if (key === 'high_contrast') {
+        if (val) document.documentElement.dataset.contrast = 'high';
+        else delete document.documentElement.dataset.contrast;
+      } else if (key === 'font_scale') {
+        if (val === 100) document.documentElement.style.removeProperty('--font-scale');
+        else document.documentElement.style.setProperty('--font-scale', String((val as number) / 100));
+      }
+
+      const serialized = serializeUiCookie(next);
+      document.cookie = `${UI_COOKIE_NAME}=${serialized}; path=/; max-age=31536000; SameSite=Lax`;
+    }
+  };
+
+  const handleResetUiDefaults = () => {
+    setUiPrefs(DEFAULT_UI_PREFERENCES);
+    if (typeof document !== 'undefined') {
+      delete document.documentElement.dataset.theme;
+      document.documentElement.dataset.accent = 'indigo';
+      delete document.documentElement.dataset.density;
+      delete document.documentElement.dataset.contrast;
+      document.documentElement.style.removeProperty('--font-scale');
+      const serialized = serializeUiCookie(DEFAULT_UI_PREFERENCES);
+      document.cookie = `${UI_COOKIE_NAME}=${serialized}; path=/; max-age=31536000; SameSite=Lax`;
+    }
+  };
 
   const org = getOrganization();
   const settings = getOrgSettings();
@@ -83,7 +139,7 @@ export default function SettingsPage() {
   const [members, setMembers] = useState<Membership[]>([
     {
       id: 'mem-admin',
-      org_id: org?.id || 'org-main',
+      org_id: org?.id || '',
       user_id: 'usr-admin',
       role: 'owner',
       is_active: true,
@@ -133,7 +189,7 @@ export default function SettingsPage() {
     const city = parts.slice(1).join(' ') || postal_code;
 
     saveOrganization({
-      id: org?.id || 'org-main',
+      id: org?.id || (typeof crypto !== 'undefined' ? crypto.randomUUID() : `org-${Date.now()}`),
       name: companyName,
       legal_name: companyName,
       tax_id: taxId.trim().toUpperCase(),
@@ -149,8 +205,8 @@ export default function SettingsPage() {
     });
 
     saveOrgSettings({
-      id: settings?.id || 'set-main',
-      org_id: org?.id || 'org-main',
+      id: settings?.id || (typeof crypto !== 'undefined' ? crypto.randomUUID() : `set-${Date.now()}`),
+      org_id: org?.id || '',
       default_validity_days: validityDays,
       default_vat_rate: defaultVat,
       default_irpf_rate: defaultIrpf,
@@ -198,7 +254,7 @@ export default function SettingsPage() {
 
     recordAuditEvent({
       id: `audit-${crypto.randomUUID()}`,
-      org_id: org?.id || 'org-main',
+      org_id: org?.id || '',
       actor_kind: 'user',
       type: 'export',
       description: 'Exportación completa de respaldo y portabilidad conforme a RGPD art. 20.',
@@ -218,7 +274,7 @@ export default function SettingsPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           plan,
-          org_id: org?.id || 'org-main',
+          org_id: org?.id || '',
         }),
       });
 
@@ -282,7 +338,7 @@ export default function SettingsPage() {
 
       const newMember: Membership = {
         id: `mem-${Date.now()}`,
-        org_id: org?.id || 'org-main',
+        org_id: org?.id || '',
         user_id: inviteEmail,
         role: inviteRole,
         is_active: true,
@@ -420,12 +476,23 @@ export default function SettingsPage() {
             <Bell size={15} />
             <span>Notificaciones</span>
           </button>
+          <button
+            onClick={() => setTab('appearance')}
+            className={`pb-3 px-3 transition-colors cursor-pointer flex items-center gap-2 border-b-2 ${
+              tab === 'appearance'
+                ? 'border-indigo-500 text-white font-semibold'
+                : 'border-transparent text-gray-400 hover:text-gray-200'
+            }`}
+          >
+            <Palette size={15} />
+            <span>Apariencia & Diseño</span>
+          </button>
         </div>
 
         {/* PESTAÑA: IDENTIFICACIÓN FISCAL */}
         {tab === 'fiscal' && (
           <form onSubmit={handleSave} className="space-y-6">
-            <div className="p-6 rounded-2xl bg-[#0D101A] border border-white/10 space-y-4">
+            <div className="p-6 rounded-2xl bg-[var(--bg-surface)] border border-white/10 space-y-4">
               <h2 className="font-bold text-white text-base flex items-center gap-2 pb-3 border-b border-white/10">
                 <Building2 size={18} className="text-indigo-400" />
                 <span>Identificación Fiscal Oficial (RD 1619/2012)</span>
@@ -439,7 +506,7 @@ export default function SettingsPage() {
                     value={companyName}
                     onChange={(e) => setCompanyName(e.target.value)}
                     placeholder="Denominación legal de la empresa"
-                    className="input bg-[#121626] border-white/10 text-xs w-full px-3 py-2 rounded-xl text-white"
+                    className="input bg-[var(--bg-surface-2)] border-white/10 text-xs w-full px-3 py-2 rounded-xl text-white"
                   />
                 </div>
 
@@ -451,7 +518,7 @@ export default function SettingsPage() {
                     onChange={(e) => setTaxId(e.target.value)}
                     onBlur={handleTaxIdBlur}
                     placeholder="B12345678"
-                    className="input bg-[#121626] border-white/10 text-xs font-mono w-full px-3 py-2 rounded-xl text-white"
+                    className="input bg-[var(--bg-surface-2)] border-white/10 text-xs font-mono w-full px-3 py-2 rounded-xl text-white"
                   />
                   {taxIdError && <p className="text-red-400 text-[11px] mt-1">{taxIdError}</p>}
                 </div>
@@ -462,7 +529,7 @@ export default function SettingsPage() {
                     type="text"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
-                    className="input bg-[#121626] border-white/10 text-xs w-full px-3 py-2 rounded-xl text-white"
+                    className="input bg-[var(--bg-surface-2)] border-white/10 text-xs w-full px-3 py-2 rounded-xl text-white"
                   />
                 </div>
 
@@ -473,7 +540,7 @@ export default function SettingsPage() {
                     value={address}
                     onChange={(e) => setAddress(e.target.value)}
                     placeholder="Calle, número, planta"
-                    className="input bg-[#121626] border-white/10 text-xs w-full px-3 py-2 rounded-xl text-white"
+                    className="input bg-[var(--bg-surface-2)] border-white/10 text-xs w-full px-3 py-2 rounded-xl text-white"
                   />
                 </div>
 
@@ -484,7 +551,7 @@ export default function SettingsPage() {
                     value={postalCity}
                     onChange={(e) => setPostalCity(e.target.value)}
                     placeholder="28001 Madrid"
-                    className="input bg-[#121626] border-white/10 text-xs w-full px-3 py-2 rounded-xl text-white"
+                    className="input bg-[var(--bg-surface-2)] border-white/10 text-xs w-full px-3 py-2 rounded-xl text-white"
                   />
                 </div>
 
@@ -494,7 +561,7 @@ export default function SettingsPage() {
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="input bg-[#121626] border-white/10 text-xs w-full px-3 py-2 rounded-xl text-white"
+                    className="input bg-[var(--bg-surface-2)] border-white/10 text-xs w-full px-3 py-2 rounded-xl text-white"
                   />
                 </div>
 
@@ -505,14 +572,14 @@ export default function SettingsPage() {
                     value={mercantile}
                     onChange={(e) => setMercantile(e.target.value)}
                     placeholder="Tomo, Libro, Folio, Hoja de inscripción"
-                    className="input bg-[#121626] border-white/10 text-xs font-mono w-full px-3 py-2 rounded-xl text-white"
+                    className="input bg-[var(--bg-surface-2)] border-white/10 text-xs font-mono w-full px-3 py-2 rounded-xl text-white"
                   />
                 </div>
               </div>
             </div>
 
             {/* Bloque Bancario */}
-            <div className="p-6 rounded-2xl bg-[#0D101A] border border-white/10 space-y-4">
+            <div className="p-6 rounded-2xl bg-[var(--bg-surface)] border border-white/10 space-y-4">
               <h2 className="font-bold text-white text-base flex items-center gap-2 pb-3 border-b border-white/10">
                 <CreditCard size={18} className="text-indigo-400" />
                 <span>Cuentas de Cobro y Facturación</span>
@@ -526,7 +593,7 @@ export default function SettingsPage() {
                     value={iban}
                     onChange={(e) => setIban(e.target.value)}
                     placeholder="ES00 0000 0000 0000 0000 0000"
-                    className="input bg-[#121626] border-white/10 text-xs font-mono w-full px-3 py-2 rounded-xl text-white"
+                    className="input bg-[var(--bg-surface-2)] border-white/10 text-xs font-mono w-full px-3 py-2 rounded-xl text-white"
                   />
                 </div>
 
@@ -535,7 +602,7 @@ export default function SettingsPage() {
                   <select
                     value={billingMode}
                     onChange={(e) => setBillingMode(e.target.value as 'verifactu' | 'no_verifactu')}
-                    className="input bg-[#121626] border-white/10 text-xs w-full px-3 py-2 rounded-xl text-white"
+                    className="input bg-[var(--bg-surface-2)] border-white/10 text-xs w-full px-3 py-2 rounded-xl text-white"
                   >
                     <option value="no_verifactu">Registro inalterable estándar (Sin envío telemático)</option>
                     <option value="verifactu">Veri*Factu (Requiere certificado digital configurado)</option>
@@ -548,14 +615,14 @@ export default function SettingsPage() {
                     type="text"
                     disabled
                     value="EUR (€) — Euro"
-                    className="input bg-[#121626] border-white/10 text-xs text-gray-400 cursor-not-allowed w-full px-3 py-2 rounded-xl"
+                    className="input bg-[var(--bg-surface-2)] border-white/10 text-xs text-gray-400 cursor-not-allowed w-full px-3 py-2 rounded-xl"
                   />
                 </div>
               </div>
             </div>
 
             {/* Parámetros Documentales por Defecto */}
-            <div className="p-6 rounded-2xl bg-[#0D101A] border border-white/10 space-y-4">
+            <div className="p-6 rounded-2xl bg-[var(--bg-surface)] border border-white/10 space-y-4">
               <h2 className="font-bold text-white text-base flex items-center gap-2 pb-3 border-b border-white/10">
                 <FileCheck size={18} className="text-indigo-400" />
                 <span>Parámetros Documentales por Defecto</span>
@@ -570,7 +637,7 @@ export default function SettingsPage() {
                     max="365"
                     value={validityDays}
                     onChange={(e) => setValidityDays(Number(e.target.value) || 30)}
-                    className="input bg-[#121626] border-white/10 text-xs font-mono w-full px-3 py-2 rounded-xl text-white"
+                    className="input bg-[var(--bg-surface-2)] border-white/10 text-xs font-mono w-full px-3 py-2 rounded-xl text-white"
                   />
                 </div>
                 <div>
@@ -578,7 +645,7 @@ export default function SettingsPage() {
                   <select
                     value={defaultVat}
                     onChange={(e) => setDefaultVat(Number(e.target.value))}
-                    className="input bg-[#121626] border-white/10 text-xs w-full px-3 py-2 rounded-xl text-white"
+                    className="input bg-[var(--bg-surface-2)] border-white/10 text-xs w-full px-3 py-2 rounded-xl text-white"
                   >
                     <option value={21}>21% (General)</option>
                     <option value={10}>10% (Reducido)</option>
@@ -594,7 +661,7 @@ export default function SettingsPage() {
                     max="100"
                     value={defaultIrpf}
                     onChange={(e) => setDefaultIrpf(Number(e.target.value) || 0)}
-                    className="input bg-[#121626] border-white/10 text-xs font-mono w-full px-3 py-2 rounded-xl text-white"
+                    className="input bg-[var(--bg-surface-2)] border-white/10 text-xs font-mono w-full px-3 py-2 rounded-xl text-white"
                   />
                 </div>
                 <div className="sm:col-span-3">
@@ -604,7 +671,7 @@ export default function SettingsPage() {
                     value={defaultTerms}
                     onChange={(e) => setDefaultTerms(e.target.value)}
                     placeholder="Condiciones de pago, plazo de ejecución y garantías personalizadas de su empresa..."
-                    className="input bg-[#121626] border-white/10 text-xs w-full px-3 py-2 rounded-xl text-white"
+                    className="input bg-[var(--bg-surface-2)] border-white/10 text-xs w-full px-3 py-2 rounded-xl text-white"
                   />
                 </div>
               </div>
@@ -623,7 +690,7 @@ export default function SettingsPage() {
             )}
 
             {/* Tarjeta de Estado Actual */}
-            <div className="p-6 rounded-2xl bg-[#0D101A] border border-white/10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div className="p-6 rounded-2xl bg-[var(--bg-surface)] border border-white/10 flex flex-col md:flex-row md:items-center justify-between gap-6">
               <div className="flex items-start gap-4">
                 <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white shadow-lg shadow-indigo-500/30 shrink-0">
                   <Shield size={24} />
@@ -660,7 +727,7 @@ export default function SettingsPage() {
             {/* Opciones de Suscripción */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Plan Pro */}
-              <div className="p-6 rounded-2xl bg-[#0D101A] border border-white/10 space-y-4 relative flex flex-col justify-between">
+              <div className="p-6 rounded-2xl bg-[var(--bg-surface)] border border-white/10 space-y-4 relative flex flex-col justify-between">
                 <div>
                   <div className="flex justify-between items-center mb-2">
                     <h4 className="font-bold text-white text-base">Plan Profesional</h4>
@@ -708,7 +775,7 @@ export default function SettingsPage() {
               </div>
 
               {/* Plan Business */}
-              <div className="p-6 rounded-2xl bg-[#0D101A] border border-indigo-500/30 space-y-4 relative flex flex-col justify-between">
+              <div className="p-6 rounded-2xl bg-[var(--bg-surface)] border border-indigo-500/30 space-y-4 relative flex flex-col justify-between">
                 <div className="absolute -top-2.5 right-4 bg-indigo-600 text-white text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full shadow">
                   Recomendado
                 </div>
@@ -782,7 +849,7 @@ export default function SettingsPage() {
             {can(currentRole, 'members.manage') && (
               <form
                 onSubmit={handleInviteMember}
-                className="p-5 rounded-2xl bg-[#0D101A] border border-white/10 flex flex-col sm:flex-row sm:items-end gap-3"
+                className="p-5 rounded-2xl bg-[var(--bg-surface)] border border-white/10 flex flex-col sm:flex-row sm:items-end gap-3"
               >
                 <div className="flex-1 text-xs">
                   <label className="block text-gray-300 font-semibold mb-1">
@@ -794,7 +861,7 @@ export default function SettingsPage() {
                     value={inviteEmail}
                     onChange={(e) => setInviteEmail(e.target.value)}
                     placeholder="colaborador@empresa.es"
-                    className="w-full px-3 py-2 bg-[#121626] border border-white/10 rounded-xl text-white text-xs focus:outline-none focus:border-indigo-500"
+                    className="w-full px-3 py-2 bg-[var(--bg-surface-2)] border border-white/10 rounded-xl text-white text-xs focus:outline-none focus:border-indigo-500"
                   />
                 </div>
 
@@ -803,7 +870,7 @@ export default function SettingsPage() {
                   <select
                     value={inviteRole}
                     onChange={(e) => setInviteRole(e.target.value as UserRole)}
-                    className="w-full px-3 py-2 bg-[#121626] border border-white/10 rounded-xl text-white text-xs focus:outline-none focus:border-indigo-500"
+                    className="w-full px-3 py-2 bg-[var(--bg-surface-2)] border border-white/10 rounded-xl text-white text-xs focus:outline-none focus:border-indigo-500"
                   >
                     <option value="employee">Empleado (Operativo)</option>
                     <option value="owner">Propietario (Acceso total)</option>
@@ -821,7 +888,7 @@ export default function SettingsPage() {
             )}
 
             {/* Tabla de Miembros */}
-            <div className="p-5 rounded-2xl bg-[#0D101A] border border-white/10 space-y-3">
+            <div className="p-5 rounded-2xl bg-[var(--bg-surface)] border border-white/10 space-y-3">
               <h3 className="font-bold text-white text-sm">Miembros de la Organización</h3>
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs text-gray-300">
@@ -844,7 +911,7 @@ export default function SettingsPage() {
                               onChange={(e) =>
                                 handleChangeRole(member.id, e.target.value as UserRole)
                               }
-                              className="px-2 py-1 bg-[#121626] border border-white/10 rounded text-[11px] text-white"
+                              className="px-2 py-1 bg-[var(--bg-surface-2)] border border-white/10 rounded text-[11px] text-white"
                             >
                               <option value="owner">Propietario (Owner)</option>
                               <option value="employee">Empleado</option>
@@ -882,7 +949,7 @@ export default function SettingsPage() {
 
         {/* PESTAÑA: NOTIFICACIONES */}
         {tab === 'notifications' && (
-          <div className="p-6 rounded-2xl bg-[#0D101A] border border-white/10 space-y-4">
+          <div className="p-6 rounded-2xl bg-[var(--bg-surface)] border border-white/10 space-y-4">
             <h2 className="font-bold text-white text-base flex items-center gap-2 pb-3 border-b border-white/10">
               <Bell size={18} className="text-indigo-400" />
               <span>Notificaciones Automáticas y Eventos</span>
@@ -934,7 +1001,7 @@ export default function SettingsPage() {
         {/* PESTAÑA: COPIA Y PORTABILIDAD */}
         {tab === 'portability' && (
           <div className="space-y-6">
-            <div className="p-6 rounded-2xl bg-[#0D101A] border border-white/10 space-y-4">
+            <div className="p-6 rounded-2xl bg-[var(--bg-surface)] border border-white/10 space-y-4">
               <h2 className="font-bold text-white text-base flex items-center gap-2 pb-3 border-b border-white/10">
                 <Database size={18} className="text-indigo-400" />
                 <span>Portabilidad y Copia de Seguridad Integral (RGPD art. 20)</span>
@@ -956,7 +1023,7 @@ export default function SettingsPage() {
               </div>
             </div>
 
-            <div className="p-6 rounded-2xl bg-[#0D101A] border border-white/10 space-y-4">
+            <div className="p-6 rounded-2xl bg-[var(--bg-surface)] border border-white/10 space-y-4">
               <h2 className="font-bold text-white text-base flex items-center gap-2 pb-3 border-b border-white/10">
                 <FileCheck size={18} className="text-emerald-400" />
                 <span>Declaración Responsable del Productor de Software</span>
@@ -974,6 +1041,201 @@ export default function SettingsPage() {
                   <ExternalLink size={14} />
                   <span>Ver Declaración Responsable Pública</span>
                 </Link>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* PESTAÑA: APARIENCIA Y DISEÑO */}
+        {tab === 'appearance' && (
+          <div className="space-y-6">
+            {/* 1. Selector de Modo */}
+            <div className="p-6 rounded-2xl bg-[var(--bg-surface)] border border-white/10 space-y-4">
+              <h2 className="font-bold text-white text-base flex items-center gap-2 pb-3 border-b border-white/10">
+                <Sun size={18} className="text-indigo-400" />
+                <span>Tema de Color y Visualización</span>
+              </h2>
+              <p className="text-xs text-gray-400">
+                Seleccione el modo visual preferido. El modo Sistema sincroniza automáticamente con el sistema operativo sin parpadeo.
+              </p>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
+                {[
+                  { id: 'light' as const, label: 'Modo Claro', desc: 'Fondo blanco papel y alto contraste diurno', icon: Sun },
+                  { id: 'dark' as const, label: 'Modo Oscuro', desc: 'Obsidiana ejecutiva y descanso visual', icon: Moon },
+                  { id: 'system' as const, label: 'Automático (Sistema)', desc: 'Detecta preferencia de su dispositivo', icon: Laptop },
+                ].map((m) => {
+                  const Icon = m.icon;
+                  const isSelected = uiPrefs.mode === m.id;
+                  return (
+                    <button
+                      key={m.id}
+                      type="button"
+                      onClick={() => handleUpdateUiPref('mode', m.id)}
+                      className={`p-4 rounded-xl border text-left transition-all cursor-pointer ${
+                        isSelected
+                          ? 'border-indigo-500 bg-indigo-500/10 shadow-lg shadow-indigo-500/10'
+                          : 'border-white/10 bg-white/[0.02] hover:bg-white/[0.05]'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between mb-2">
+                        <Icon size={18} className={isSelected ? 'text-indigo-400' : 'text-gray-400'} />
+                        {isSelected && <span className="text-[11px] font-mono text-indigo-400 font-bold">ACTIVO</span>}
+                      </div>
+                      <h3 className="font-bold text-white text-sm">{m.label}</h3>
+                      <p className="text-xs text-gray-400 mt-1 leading-snug">{m.desc}</p>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* 2. Selector de Acento */}
+            <div className="card p-6 space-y-4">
+              <h2 className="font-bold text-[var(--text-primary)] text-base flex items-center gap-2 pb-3 border-b border-[var(--border-subtle)]">
+                <Palette size={18} className="text-[var(--accent-fg)]" />
+                <span>Acento Cromático</span>
+              </h2>
+              <p className="text-xs text-[var(--text-secondary)]">
+                Personalice el tono de énfasis utilizado en botones primarios, enlaces y elementos destacados (todos verificados WCAG AA).
+              </p>
+
+              <div className="grid grid-cols-2 sm:grid-cols-6 gap-3 pt-1">
+                {[
+                  { id: 'indigo' as const, label: 'Índigo' },
+                  { id: 'azul' as const, label: 'Azul' },
+                  { id: 'esmeralda' as const, label: 'Esmeralda' },
+                  { id: 'grafito' as const, label: 'Grafito' },
+                  { id: 'burdeos' as const, label: 'Burdeos' },
+                  { id: 'corporativo' as const, label: 'Corporativo' },
+                ].map((acc) => {
+                  const isSelected = uiPrefs.accent === acc.id;
+                  return (
+                    <button
+                      key={acc.id}
+                      type="button"
+                      onClick={() => handleUpdateUiPref('accent', acc.id)}
+                      className={`p-3 rounded-xl border text-center transition-all cursor-pointer ${
+                        isSelected
+                          ? 'border-[var(--accent-fg)] bg-[var(--accent-subtle)] font-bold text-[var(--text-primary)] shadow-sm'
+                          : 'border-[var(--border-default)] bg-[var(--bg-surface-2)] hover:border-[var(--border-input)] text-[var(--text-secondary)]'
+                      }`}
+                    >
+                      <div
+                        className="w-6 h-6 rounded-full mx-auto mb-2 border border-[var(--border-subtle)] shadow-sm"
+                        style={{ backgroundColor: `var(--accent)` }}
+                        data-accent={acc.id !== 'corporativo' ? acc.id : undefined}
+                      />
+                      <span className="text-xs block">{acc.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* 3. Densidad y Escala */}
+            <div className="p-6 rounded-2xl bg-[var(--bg-surface)] border border-white/10 space-y-4">
+              <h2 className="font-bold text-white text-base pb-3 border-b border-white/10">
+                Densidad y Accesibilidad de Lectura
+              </h2>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="text-xs font-semibold text-gray-300 block mb-2">Densidad de Filas y Tablas</label>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => handleUpdateUiPref('density', 'comfortable')}
+                      className={`py-2 px-3 rounded-lg text-xs border cursor-pointer ${
+                        uiPrefs.density === 'comfortable'
+                          ? 'border-indigo-500 bg-indigo-500/15 text-white font-semibold'
+                          : 'border-white/10 text-gray-400 hover:text-white'
+                      }`}
+                    >
+                      Cómoda (40px)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleUpdateUiPref('density', 'compact')}
+                      className={`py-2 px-3 rounded-lg text-xs border cursor-pointer ${
+                        uiPrefs.density === 'compact'
+                          ? 'border-indigo-500 bg-indigo-500/15 text-white font-semibold'
+                          : 'border-white/10 text-gray-400 hover:text-white'
+                      }`}
+                    >
+                      Compacta (32px)
+                    </button>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-xs font-semibold text-gray-300 block mb-2">Escala Tipográfica</label>
+                  <div className="grid grid-cols-3 gap-2">
+                    {[
+                      { scale: 100 as const, label: '100% (Base)' },
+                      { scale: 110 as const, label: '110% (Media)' },
+                      { scale: 125 as const, label: '125% (Grande)' },
+                    ].map((s) => (
+                      <button
+                        key={s.scale}
+                        type="button"
+                        onClick={() => handleUpdateUiPref('font_scale', s.scale)}
+                        className={`py-2 px-2 rounded-lg text-xs border cursor-pointer ${
+                          uiPrefs.font_scale === s.scale
+                            ? 'border-indigo-500 bg-indigo-500/15 text-white font-semibold'
+                            : 'border-white/10 text-gray-400 hover:text-white'
+                        }`}
+                      >
+                        {s.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <div className="pt-3 border-t border-white/5">
+                <label className="flex items-center justify-between p-3 rounded-xl bg-white/[0.02] border border-white/5 cursor-pointer hover:bg-white/[0.04]">
+                  <div>
+                    <span className="font-semibold text-white text-xs block">Modo Alto Contraste</span>
+                    <span className="text-gray-400 text-[11px]">Refuerza bordes de tablas e inputs a ratio 3:1 o superior</span>
+                  </div>
+                  <input
+                    type="checkbox"
+                    checked={uiPrefs.high_contrast}
+                    onChange={(e) => handleUpdateUiPref('high_contrast', e.target.checked)}
+                    className="w-4 h-4 accent-indigo-600 rounded cursor-pointer"
+                  />
+                </label>
+              </div>
+
+              <div className="pt-2 flex justify-end">
+                <button
+                  type="button"
+                  onClick={handleResetUiDefaults}
+                  className="btn btn-secondary btn-sm"
+                >
+                  Restablecer valores por defecto
+                </button>
+              </div>
+            </div>
+
+            {/* 4. Panel de Vista Previa en Vivo */}
+            <div className="p-6 rounded-2xl bg-[var(--bg-surface)] border border-[var(--border-default)] space-y-4">
+              <h3 className="font-bold text-[var(--text-primary)] text-sm pb-2 border-b border-[var(--border-subtle)]">
+                Vista Previa en Vivo de Componentes
+              </h3>
+              <div className="flex flex-wrap items-center gap-3">
+                <button type="button" className="btn btn-primary btn-sm">Botón Primario</button>
+                <button type="button" className="btn btn-secondary btn-sm">Botón Secundario</button>
+                <span className="badge" style={{ background: 'var(--success-bg)', color: 'var(--success-fg)' }}>
+                  Aceptado
+                </span>
+                <span className="badge" style={{ background: 'var(--warning-bg)', color: 'var(--warning-fg)' }}>
+                  Pendiente
+                </span>
+                <span className="badge" style={{ background: 'var(--info-bg)', color: 'var(--info-fg)' }}>
+                  Enviado
+                </span>
               </div>
             </div>
           </div>

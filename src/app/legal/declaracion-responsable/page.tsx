@@ -10,7 +10,7 @@ export default function DeclaracionResponsablePage() {
   );
 
   return (
-    <div className="min-h-screen bg-[#0A0D14] text-slate-100 px-4 py-12 flex flex-col items-center">
+    <div className="min-h-screen bg-[var(--bg-app)] text-slate-100 px-4 py-12 flex flex-col items-center">
       <div className="w-full max-w-3xl space-y-8">
         <Link
           href="/"
@@ -44,7 +44,7 @@ export default function DeclaracionResponsablePage() {
             </div>
           </div>
         ) : (
-          <div className="bg-[#111622] border border-slate-800 rounded-2xl p-6 md:p-8 space-y-6 text-xs md:text-sm text-slate-300 leading-relaxed shadow-xl">
+          <div className="bg-[var(--bg-surface)] border border-slate-800 rounded-2xl p-6 md:p-8 space-y-6 text-xs md:text-sm text-slate-300 leading-relaxed shadow-xl">
             <div className="space-y-3 pb-6 border-b border-slate-800">
               <p>
                 D./Dña. representante legal de la entidad <strong className="text-white">{producer.name}</strong>, provista de NIF <strong className="text-white font-mono">{producer.tax_id}</strong>, en calidad de persona productora del sistema informático de facturación:

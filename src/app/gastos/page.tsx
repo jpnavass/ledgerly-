@@ -43,7 +43,7 @@ export default function ExpensesPage() {
 
     const newExpense: Expense = {
       id: `exp-${Date.now()}`,
-      org_id: org?.id || 'org-main',
+      org_id: org?.id || '',
       document_id: documentId || undefined,
       description: description.trim(),
       amount_cents: amountCents,
@@ -132,7 +132,7 @@ export default function ExpensesPage() {
         {/* Formulario de Alta de Gasto */}
         <form
           onSubmit={handleAddExpense}
-          className="p-5 rounded-2xl bg-[#0D101A] border border-white/10 space-y-4"
+          className="p-5 rounded-2xl bg-[var(--bg-surface)] border border-white/10 space-y-4"
         >
           <h2 className="text-sm font-bold text-white flex items-center gap-2">
             <Plus size={16} className="text-rose-400" />
@@ -148,7 +148,7 @@ export default function ExpensesPage() {
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="Compra de perfiles de aluminio y tornillería"
-                className="w-full px-3 py-2 bg-[#121626] border border-white/10 rounded-xl text-white text-xs"
+                className="w-full px-3 py-2 bg-[var(--bg-surface-2)] border border-white/10 rounded-xl text-white text-xs"
               />
             </div>
 
@@ -160,7 +160,7 @@ export default function ExpensesPage() {
                 value={amountEuros}
                 onChange={(e) => setAmountEuros(e.target.value)}
                 placeholder="150,00"
-                className="w-full px-3 py-2 bg-[#121626] border border-white/10 rounded-xl text-white font-mono text-xs"
+                className="w-full px-3 py-2 bg-[var(--bg-surface-2)] border border-white/10 rounded-xl text-white font-mono text-xs"
               />
             </div>
 
@@ -169,7 +169,7 @@ export default function ExpensesPage() {
               <select
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
-                className="w-full px-3 py-2 bg-[#121626] border border-white/10 rounded-xl text-white text-xs"
+                className="w-full px-3 py-2 bg-[var(--bg-surface-2)] border border-white/10 rounded-xl text-white text-xs"
               >
                 <option value="materiales">Materiales y Suministros</option>
                 <option value="subcontratacion">Subcontratación</option>
@@ -183,7 +183,7 @@ export default function ExpensesPage() {
               <select
                 value={documentId}
                 onChange={(e) => setDocumentId(e.target.value)}
-                className="w-full px-3 py-2 bg-[#121626] border border-white/10 rounded-xl text-white text-xs"
+                className="w-full px-3 py-2 bg-[var(--bg-surface-2)] border border-white/10 rounded-xl text-white text-xs"
               >
                 <option value="">Gasto General (Sin proyecto)</option>
                 {documents.map((d) => (
@@ -207,7 +207,7 @@ export default function ExpensesPage() {
         </form>
 
         {/* Tabla de Gastos */}
-        <div className="bg-[#0C0E18] border border-white/10 rounded-2xl shadow-xl overflow-hidden">
+        <div className="bg-[var(--bg-surface)] border border-white/10 rounded-2xl shadow-xl overflow-hidden">
           <div className="p-5 border-b border-white/10">
             <h2 className="text-base font-bold text-white">Libro de Gastos Operativos</h2>
           </div>

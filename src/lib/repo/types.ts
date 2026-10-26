@@ -2,7 +2,7 @@
 // Interfaz Abstracta de Repositorio y Tipos de Persistencia Multiempresa
 // ============================================================================
 
-import type { Document, DocumentItem, Client, CatalogItem, Payment, AuditEvent, Org, OrgSettings, DocType, DocStatus, License, Membership } from '../../types/index.ts';
+import type { Document, DocumentItem, Client, CatalogItem, Payment, AuditEvent, Org, OrgSettings, DocType, DocStatus, License, Membership, UserRole } from '../../types/index.ts';
 
 export type Result<T, E = Error> =
   | { ok: true; data: T }
@@ -76,4 +76,6 @@ export interface DataRepository {
   getMembers(orgId: string): Promise<Membership[]>;
   saveMember(member: Membership): Promise<Membership>;
   deleteMember(orgId: string, memberId: string): Promise<boolean>;
+  getUserActiveMembership(): Promise<{ orgId: string; role: UserRole } | null>;
 }
+

@@ -168,7 +168,7 @@ export default function NewDocumentPage() {
 
         {/* Paso 0: Selección de Serie y Tipo */}
         {step === 0 && (
-          <div className="p-6 rounded-2xl bg-[#0D101A] border border-white/10 space-y-4 animate-fade-in">
+          <div className="p-6 rounded-2xl bg-[var(--bg-surface)] border border-white/10 space-y-4 animate-fade-in">
             <h2 className="text-base font-bold text-white">
               Selecciona el tipo de documento a emitir:
             </h2>
@@ -181,7 +181,7 @@ export default function NewDocumentPage() {
                   className={`w-full p-4 rounded-xl border flex items-center gap-4 text-left transition-all ${
                     docType === type.value
                       ? 'bg-indigo-600/15 border-indigo-500 shadow-lg shadow-indigo-500/15'
-                      : 'bg-[#111422] border-white/10 hover:border-white/20'
+                      : 'bg-[var(--bg-surface-2)] border-white/10 hover:border-white/20'
                   }`}
                 >
                   <div
@@ -219,7 +219,7 @@ export default function NewDocumentPage() {
 
         {/* Paso 1: Selección de Cliente */}
         {step === 1 && (
-          <div className="p-6 rounded-2xl bg-[#0D101A] border border-white/10 space-y-4 animate-fade-in">
+          <div className="p-6 rounded-2xl bg-[var(--bg-surface)] border border-white/10 space-y-4 animate-fade-in">
             <div className="flex items-center justify-between">
               <h2 className="text-base font-bold text-white">
                 ¿A qué cuenta o empresa va dirigido el documento?
@@ -243,7 +243,7 @@ export default function NewDocumentPage() {
                     className={`w-full p-3.5 rounded-xl border flex items-center gap-3 text-left transition-all ${
                       clientId === client.id
                         ? 'bg-indigo-600/15 border-indigo-500 shadow-lg shadow-indigo-500/15'
-                        : 'bg-[#111422] border-white/10 hover:border-white/20'
+                        : 'bg-[var(--bg-surface-2)] border-white/10 hover:border-white/20'
                     }`}
                   >
                     <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-indigo-400 flex-shrink-0">
@@ -281,7 +281,7 @@ export default function NewDocumentPage() {
 
         {/* Paso 2: Título y Objeto Contractual */}
         {step === 2 && (
-          <div className="p-6 rounded-2xl bg-[#0D101A] border border-white/10 space-y-4 animate-fade-in">
+          <div className="p-6 rounded-2xl bg-[var(--bg-surface)] border border-white/10 space-y-4 animate-fade-in">
             <h2 className="text-base font-bold text-white">
               Título y Objeto del Documento
             </h2>
@@ -292,7 +292,7 @@ export default function NewDocumentPage() {
                   type="text"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  className="input bg-[#121626] border-white/15 text-sm py-3"
+                  className="input bg-[var(--bg-surface-2)] border-white/15 text-sm py-3"
                   placeholder="Ej. Instalación Eléctrica Baja Tensión y Cuadro General"
                   autoFocus
                 />

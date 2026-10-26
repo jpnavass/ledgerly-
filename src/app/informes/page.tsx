@@ -22,34 +22,42 @@ import type { Document, Client } from '@/types';
 export default function ReportsPage() {
   const [docs, setDocs] = useState<Document[]>([]);
   const [clients, setClients] = useState<Client[]>([]);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
-  useEffect(() => {
-    let mounted = true;
-    async function loadData() {
-      const repo = getRepository();
-      const currentOrg = getOrganization();
-      const orgId = currentOrg?.id || 'org-main';
-      try {
-        const [docsData, clientsData] = await Promise.all([
-          repo.getDocuments(orgId),
-          repo.getClients(orgId),
-        ]);
-        if (mounted) {
-          setDocs(docsData);
-          setClients(clientsData);
-        }
-      } catch (e) {
-        if (mounted) {
-          setDocs(getDocuments());
-          setClients(getClients());
-        }
+  const loadData = async () => {
+    const isSupabase = typeof process !== 'undefined' && Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL);
+    const repo = getRepository();
+    const currentOrg = getOrganization();
+    const orgId = currentOrg?.id || '';
+    try {
+      if (!orgId && isSupabase) {
+        throw new Error('No se ha detectado una organización activa vinculada a la sesión.');
+      }
+      const [docsData, clientsData] = await Promise.all([
+        repo.getDocuments(orgId),
+        repo.getClients(orgId),
+      ]);
+      setDocs(docsData);
+      setClients(clientsData);
+      setLoadError(null);
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : 'Error al sincronizar informes con el repositorio.';
+      if (isSupabase) {
+        setLoadError(msg);
+        setDocs([]);
+        setClients([]);
+      } else {
+        setDocs(getDocuments());
+        setClients(getClients());
       }
     }
+  };
+
+  useEffect(() => {
     loadData();
     const handleUpdate = () => loadData();
     window.addEventListener('pe_store_updated', handleUpdate);
     return () => {
-      mounted = false;
       window.removeEventListener('pe_store_updated', handleUpdate);
     };
   }, []);
@@ -103,6 +111,14 @@ export default function ReportsPage() {
   return (
     <AppLayout>
       <div className="p-5 md:p-8 max-w-[1440px] mx-auto space-y-6 animate-fade-in">
+        {loadError && (
+          <div className="p-4 bg-rose-500/10 border border-rose-500/30 rounded-xl flex items-center justify-between gap-4">
+            <p className="text-sm text-rose-300">{loadError}</p>
+            <button onClick={loadData} className="btn btn-secondary btn-sm flex-shrink-0">
+              Reintentar
+            </button>
+          </div>
+        )}
         {/* Cabecera */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
@@ -207,7 +223,7 @@ export default function ReportsPage() {
         {/* Embudo de Ventas y Desglose */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Embudo de Conversión */}
-          <div className="p-6 rounded-2xl bg-[#0D101A] border border-white/10 space-y-4">
+          <div className="p-6 rounded-2xl bg-[var(--bg-surface)] border border-white/10 space-y-4">
             <div className="flex items-center justify-between">
               <h2 className="font-bold text-white text-base flex items-center gap-2">
                 <BarChart3 size={18} className="text-indigo-400" />
@@ -237,7 +253,7 @@ export default function ReportsPage() {
           </div>
 
           {/* Desglose por Área Técnica */}
-          <div className="p-6 rounded-2xl bg-[#0D101A] border border-white/10 space-y-4">
+          <div className="p-6 rounded-2xl bg-[var(--bg-surface)] border border-white/10 space-y-4">
             <div className="flex items-center justify-between">
               <h2 className="font-bold text-white text-base flex items-center gap-2">
                 <PieChart size={18} className="text-purple-400" />
@@ -274,7 +290,7 @@ export default function ReportsPage() {
         </div>
 
         {/* Ranking de Clientes Corporativos */}
-        <div className="bg-[#0C0E18] border border-white/10 rounded-2xl shadow-xl overflow-hidden">
+        <div className="bg-[var(--bg-surface)] border border-white/10 rounded-2xl shadow-xl overflow-hidden">
           <div className="p-5 border-b border-white/10">
             <h2 className="text-base font-bold text-white">Top Cuentas Corporativas por Facturación</h2>
             <p className="text-xs text-gray-400 mt-0.5">

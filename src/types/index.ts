@@ -194,69 +194,18 @@ export interface StatusStyle {
   className: string;
 }
 
-export const TONE_STYLES: Record<Tone, StatusStyle> = {
-  neutral: {
-    bg: 'rgba(148, 163, 184, 0.12)',
-    text: '#94A3B8',
-    border: 'rgba(148, 163, 184, 0.25)',
-    className: 'bg-slate-500/15 text-slate-400 border-slate-500/30',
-  },
-  info: {
-    bg: 'rgba(59, 130, 246, 0.12)',
-    text: '#60A5FA',
-    border: 'rgba(59, 130, 246, 0.25)',
-    className: 'bg-blue-500/15 text-blue-400 border-blue-500/30',
-  },
-  violet: {
-    bg: 'rgba(168, 85, 247, 0.12)',
-    text: '#C084FC',
-    border: 'rgba(168, 85, 247, 0.25)',
-    className: 'bg-purple-500/15 text-purple-400 border-purple-500/30',
-  },
-  success: {
-    bg: 'rgba(16, 185, 129, 0.12)',
-    text: '#34D399',
-    border: 'rgba(16, 185, 129, 0.25)',
-    className: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30',
-  },
-  warning: {
-    bg: 'rgba(245, 158, 11, 0.12)',
-    text: '#FBBF24',
-    border: 'rgba(245, 158, 11, 0.25)',
-    className: 'bg-amber-500/15 text-amber-300 border-amber-500/30',
-  },
-  danger: {
-    bg: 'rgba(239, 68, 68, 0.12)',
-    text: '#F87171',
-    border: 'rgba(239, 68, 68, 0.25)',
-    className: 'bg-rose-500/15 text-rose-400 border-rose-500/30',
-  },
-  teal: {
-    bg: 'rgba(20, 184, 166, 0.12)',
-    text: '#2DD4BF',
-    border: 'rgba(20, 184, 166, 0.25)',
-    className: 'bg-teal-500/15 text-teal-400 border-teal-500/30',
-  },
-  muted: {
-    bg: 'rgba(107, 114, 128, 0.12)',
-    text: '#9CA3AF',
-    border: 'rgba(107, 114, 128, 0.25)',
-    className: 'bg-gray-500/15 text-gray-400 border-gray-500/30',
-  },
-};
-
 export const DOC_STATUS_COLORS: Record<DocStatus, StatusStyle> = {
-  draft: TONE_STYLES.neutral,
-  sent: TONE_STYLES.info,
-  viewed: TONE_STYLES.violet,
-  accepted: TONE_STYLES.success,
-  rejected: TONE_STYLES.danger,
-  expired: TONE_STYLES.muted,
-  invoiced: TONE_STYLES.teal,
-  issued: TONE_STYLES.info,
-  paid: TONE_STYLES.success,
-  partially_paid: TONE_STYLES.warning,
-  void: TONE_STYLES.danger,
+  draft: { bg: 'var(--neutral-bg)', text: 'var(--neutral-fg)', border: 'var(--border-default)', className: 'badge' },
+  sent: { bg: 'var(--info-bg)', text: 'var(--info-fg)', border: 'var(--border-default)', className: 'badge' },
+  viewed: { bg: 'var(--violet-bg)', text: 'var(--violet-fg)', border: 'var(--border-default)', className: 'badge' },
+  accepted: { bg: 'var(--success-bg)', text: 'var(--success-fg)', border: 'var(--border-default)', className: 'badge' },
+  rejected: { bg: 'var(--danger-bg)', text: 'var(--danger-fg)', border: 'var(--border-default)', className: 'badge' },
+  expired: { bg: 'var(--muted-bg)', text: 'var(--muted-fg)', border: 'var(--border-default)', className: 'badge' },
+  invoiced: { bg: 'var(--teal-bg)', text: 'var(--teal-fg)', border: 'var(--border-default)', className: 'badge' },
+  issued: { bg: 'var(--info-bg)', text: 'var(--info-fg)', border: 'var(--border-default)', className: 'badge' },
+  paid: { bg: 'var(--success-bg)', text: 'var(--success-fg)', border: 'var(--border-default)', className: 'badge' },
+  partially_paid: { bg: 'var(--warning-bg)', text: 'var(--warning-fg)', border: 'var(--border-default)', className: 'badge' },
+  void: { bg: 'var(--danger-bg)', text: 'var(--danger-fg)', border: 'var(--border-default)', className: 'badge' },
 };
 
 // ----- Partidas y Capítulos -----

@@ -1,0 +1,93 @@
+/* ============================================================================
+   ESTILOS DE IMPRESIÓN OFICIAL — PRESUPUESTO EXPRESS ENTERPRISE
+   Siempre en modo claro, independiente del tema activo del usuario.
+   Corrige el defecto H-17 respetando cabeceras y pies de documentos oficiales.
+   ============================================================================ */
+
+@media print {
+  :root,
+  :root[data-theme="dark"],
+  :root[data-theme="light"] {
+    color-scheme: light !important;
+    --bg-app: #FFFFFF !important;
+    --bg-surface: #FFFFFF !important;
+    --bg-surface-2: #F8F9FA !important;
+    --bg-elevated: #FFFFFF !important;
+    --border-subtle: #E2E8F0 !important;
+    --border-default: #CBD5E1 !important;
+    --border-input: #94A3B8 !important;
+    --text-primary: #0F172A !important;
+    --text-secondary: #334155 !important;
+    --text-tertiary: #475569 !important;
+  }
+
+  body {
+    background: #FFFFFF !important;
+    color: #0F172A !important;
+    font-size: 11pt;
+    line-height: 1.4;
+    margin: 0;
+    padding: 0;
+  }
+
+  /* Ocultación de elementos de la interfaz de la aplicación */
+  .no-print,
+  .sidebar,
+  .top-header,
+  nav:not(#official-print-document nav),
+  aside,
+  [role="dialog"],
+  .toast-region,
+  button:not(#official-print-document button),
+  .btn:not(#official-print-document .btn) {
+    display: none !important;
+  }
+
+  /* Reglas específicas dentro del contenedor oficial #official-print-document */
+  #official-print-document {
+    background: #FFFFFF !important;
+    color: #0F172A !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+  }
+
+  #official-print-document header,
+  #official-print-document footer,
+  #official-print-document nav,
+  #official-print-document .badge {
+    display: revert !important;
+  }
+
+  #official-print-document button,
+  #official-print-document .btn {
+    display: none !important;
+  }
+
+  /* Estructura de tablas para impresión paginada */
+  table {
+    page-break-inside: auto;
+    width: 100%;
+  }
+
+  tr {
+    page-break-inside: avoid;
+    page-break-after: auto;
+  }
+
+  thead {
+    display: table-header-group;
+  }
+
+  tfoot {
+    display: table-footer-group;
+  }
+
+  @page {
+    size: A4 portrait;
+    margin: 15mm 15mm 15mm 15mm;
+  }
+}

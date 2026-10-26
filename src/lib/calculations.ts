@@ -141,10 +141,11 @@ export function calcLineBreakdown(line: CalcLineInput, index?: number): LineBrea
     };
   }
 
-  const gross_cents = roundHalfUp(line.quantity * line.price_cents);
+  const qtyMillis = Math.round(line.quantity * 1000);
+  const gross_cents = roundHalfUp((qtyMillis * line.price_cents) / 1000);
   const discount_cents = roundHalfUp((gross_cents * line.discount_pct) / 100);
   const subtotal_cents = gross_cents - discount_cents;
-  const cost_cents = line.cost_cents !== undefined ? roundHalfUp(line.quantity * line.cost_cents) : 0;
+  const cost_cents = line.cost_cents !== undefined ? roundHalfUp((qtyMillis * line.cost_cents) / 1000) : 0;
 
   return {
     gross_cents,

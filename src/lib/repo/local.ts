@@ -3,8 +3,8 @@
 // Persistencia en navegador aislada por Organización, sin datos precargados
 // ============================================================================
 
-import type { DataRepository, DocumentFilterParams } from './types.ts';
-import type { Document, Client, CatalogItem, Payment, AuditEvent, Org, OrgSettings, License, Membership } from '../../types/index.ts';
+import type { DataRepository, DocumentFilterParams, PaginationParams } from './types.ts';
+import type { Document, Client, CatalogItem, Payment, AuditEvent, Org, OrgSettings, License, Membership, UserRole } from '../../types/index.ts';
 
 const LOCAL_STORAGE_KEYS = {
   DOCUMENTS: 'pe_enterprise_documents_v2',
@@ -389,4 +389,11 @@ export class LocalStorageRepository implements DataRepository {
     safeSet(LOCAL_STORAGE_KEYS.MEMBERS, filtered);
     return true;
   }
+
+  async getUserActiveMembership(): Promise<{ orgId: string; role: UserRole } | null> {
+    const org = await this.getOrganization('');
+    if (!org) return null;
+    return { orgId: org.id, role: 'owner' };
+  }
 }
+

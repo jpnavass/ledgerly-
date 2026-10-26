@@ -234,6 +234,98 @@ describe('Ciclo de Vida Documental (documents.ts)', () => {
     assert.strictEqual(updatedSource.status, 'invoiced');
   });
 
+  it('conversión: Presupuesto aceptado a Albarán de entrega clona partidas y asigna converted_from', () => {
+    const quoteDraft = createDraftDocument({
+      doc_type: 'quote',
+      client_id: validClient.id,
+      client: validClient,
+      title: 'Instalación Solar',
+      org_id: 'org-test-1',
+    });
+
+    const quoteWithLines = updateDraftDocument(quoteDraft, {
+      items: [
+        {
+          id: 'item-quote-alb',
+          item_type: 'line',
+          position: 1,
+          description: 'Paneles solares 450W',
+          quantity: 8,
+          price_cents: 18000,
+          discount_pct: 5,
+          vat_rate: 21,
+          irpf_rate: 0,
+          is_optional: false,
+        },
+      ],
+    });
+
+    const acceptedQuote: Document = {
+      ...quoteWithLines,
+      status: 'accepted',
+    };
+
+    const { newDocument: deliveryDoc, updatedSource } = convertDocument({
+      source: acceptedQuote,
+      targetType: 'delivery_note',
+    });
+
+    assert.strictEqual(deliveryDoc.doc_type, 'delivery_note');
+    assert.strictEqual(deliveryDoc.status, 'draft');
+    assert.strictEqual(deliveryDoc.converted_from, acceptedQuote.id);
+    assert.strictEqual(deliveryDoc.items.length, 1);
+    assert.strictEqual(deliveryDoc.items[0].description, 'Paneles solares 450W');
+    assert.notStrictEqual(deliveryDoc.items[0].id, 'item-quote-alb');
+    assert.strictEqual(deliveryDoc.items[0].document_id, deliveryDoc.id);
+    // El presupuesto permanece aceptado al generar un albarán intermedio
+    assert.strictEqual(updatedSource.status, 'accepted');
+  });
+
+  it('conversión: Presupuesto aceptado a Factura Proforma clona partidas y preserva importes', () => {
+    const quoteDraft = createDraftDocument({
+      doc_type: 'quote',
+      client_id: validClient.id,
+      client: validClient,
+      title: 'Reforma Cocina',
+      org_id: 'org-test-1',
+    });
+
+    const quoteWithLines = updateDraftDocument(quoteDraft, {
+      items: [
+        {
+          id: 'item-quote-prof',
+          item_type: 'line',
+          position: 1,
+          description: 'Muebles de madera',
+          quantity: 1,
+          price_cents: 450000,
+          discount_pct: 10,
+          vat_rate: 21,
+          irpf_rate: 0,
+          is_optional: false,
+        },
+      ],
+    });
+
+    const acceptedQuote: Document = {
+      ...quoteWithLines,
+      status: 'accepted',
+    };
+
+    const { newDocument: proformaDoc, updatedSource } = convertDocument({
+      source: acceptedQuote,
+      targetType: 'proforma',
+    });
+
+    assert.strictEqual(proformaDoc.doc_type, 'proforma');
+    assert.strictEqual(proformaDoc.status, 'draft');
+    assert.strictEqual(proformaDoc.converted_from, acceptedQuote.id);
+    assert.strictEqual(proformaDoc.items.length, 1);
+    assert.strictEqual(proformaDoc.items[0].description, 'Muebles de madera');
+    assert.strictEqual(proformaDoc.total_cents, quoteWithLines.total_cents);
+    assert.strictEqual(updatedSource.status, 'accepted');
+  });
+
   it('factura rectificativa: por diferencias anula exactamente la factura original (suma neta = 0)', () => {
     const invoiceDraft = createDraftDocument({
       doc_type: 'invoice',

@@ -3,8 +3,8 @@
 // Para ejecución aislada de pruebas unitarias y entornos sin red
 // ============================================================================
 
-import type { DataRepository, DocumentFilterParams } from './types.ts';
-import type { Document, Client, CatalogItem, Payment, AuditEvent, Org, OrgSettings, License, Membership } from '../../types/index.ts';
+import type { DataRepository, DocumentFilterParams, PaginationParams } from './types.ts';
+import type { Document, Client, CatalogItem, Payment, AuditEvent, Org, OrgSettings, License, Membership, UserRole } from '../../types/index.ts';
 
 export class MemoryRepository implements DataRepository {
   private documents = new Map<string, Document>();
@@ -47,6 +47,16 @@ export class MemoryRepository implements DataRepository {
     return doc;
   }
 
+  async findDocumentByTokenOrId(identifier: string): Promise<Document | null> {
+    const docs = Array.from(this.documents.values());
+    const found = docs.find(
+      (d) =>
+        d.id === identifier ||
+        d.public_token_hash === identifier
+    );
+    return found || null;
+  }
+
   async saveDocument(orgId: string, doc: Document): Promise<Document> {
     const toSave: Document = {
       ...doc,
@@ -70,11 +80,16 @@ export class MemoryRepository implements DataRepository {
   }
 
   // Clientes
-  async getClients(orgId: string, search?: string): Promise<Client[]> {
+  async getClients(orgId: string, params?: PaginationParams | string): Promise<Client[]> {
     let list = Array.from(this.clients.values()).filter((c) => c.org_id === orgId);
+    const search = typeof params === 'string' ? params : params?.search;
     if (search) {
       const q = search.toLowerCase();
       list = list.filter((c) => c.name.toLowerCase().includes(q) || c.tax_id.toLowerCase().includes(q));
+    }
+    if (typeof params === 'object' && params?.page && params?.limit) {
+      const start = (params.page - 1) * params.limit;
+      list = list.slice(start, start + params.limit);
     }
     return list;
   }
@@ -245,6 +260,19 @@ export class MemoryRepository implements DataRepository {
     if (!member || member.org_id !== orgId) return false;
     return this.members.delete(memberId);
   }
+
+  async getUserActiveMembership(): Promise<{ orgId: string; role: UserRole } | null> {
+    const list = Array.from(this.members.values());
+    if (list.length > 0) {
+      return { orgId: list[0].org_id, role: list[0].role };
+    }
+    const orgList = Array.from(this.orgs.values());
+    if (orgList.length > 0) {
+      return { orgId: orgList[0].id, role: 'owner' };
+    }
+    return null;
+  }
+
 
   // Utilidad de limpieza para pruebas
   clear(): void {

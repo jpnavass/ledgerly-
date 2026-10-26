@@ -6,8 +6,8 @@ import { getDocuments, getRepository, getOrganization } from '@/lib/store';
 import {
   DOC_TYPE_LABELS,
   DOC_STATUS_LABELS,
-  DOC_STATUS_COLORS,
 } from '@/types';
+import { Badge } from '@/components/ui/Badge';
 import { formatCents } from '@/lib/calculations';
 import { formatDate } from '@/lib/utils';
 import type { Document } from '@/types';
@@ -136,7 +136,7 @@ export default function DocumentsPage() {
         </div>
 
         {/* Barra de Filtros y Búsqueda */}
-        <div className="card-static p-4 bg-[#0C0E18] border border-white/10 rounded-2xl">
+        <div className="card-static p-4 bg-[var(--bg-surface)] border border-white/10 rounded-2xl">
           <div className="flex flex-col lg:flex-row gap-3">
             {/* Buscador */}
             <div className="relative flex-1">
@@ -158,7 +158,7 @@ export default function DocumentsPage() {
               <select
                 value={typeFilter}
                 onChange={(e) => setTypeFilter(e.target.value as FilterType)}
-                className="input bg-[#121626] border-white/10 text-xs min-w-[170px]"
+                className="input bg-[var(--bg-surface-2)] border-white/10 text-xs min-w-[170px]"
               >
                 <option value="all">Todos los Tipos</option>
                 <option value="quote">Presupuestos (PRE)</option>
@@ -170,7 +170,7 @@ export default function DocumentsPage() {
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value as FilterStatus)}
-                className="input bg-[#121626] border-white/10 text-xs min-w-[160px]"
+                className="input bg-[var(--bg-surface-2)] border-white/10 text-xs min-w-[160px]"
               >
                 <option value="all">Todos los Estados</option>
                 <option value="draft">Borrador</option>
@@ -199,7 +199,7 @@ export default function DocumentsPage() {
 
         {/* Tabla de Documentos o Estado Vacío */}
         {filtered.length > 0 ? (
-          <div className="bg-[#0C0E18] border border-white/10 rounded-2xl shadow-xl overflow-hidden">
+          <div className="bg-[var(--bg-surface)] border border-white/10 rounded-2xl shadow-xl overflow-hidden">
             <div className="table-container">
               <table className="table">
                 <thead>
@@ -214,8 +214,7 @@ export default function DocumentsPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {filtered.map((doc) => {
-                    const statusColor = DOC_STATUS_COLORS[doc.status] || { bg: 'rgba(255,255,255,0.05)', text: '#CBD5E1' };
+                  {filtered.slice((currentPage - 1) * pageSize, currentPage * pageSize).map((doc) => {
                     const code = doc.series
                       ? `${doc.series}-${String(doc.number || doc.doc_number || 0).padStart(4, '0')}`
                       : 'BORRADOR';
@@ -266,19 +265,7 @@ export default function DocumentsPage() {
 
                         {/* Estado */}
                         <td>
-                          <span
-                            className="badge"
-                            style={{
-                              background: statusColor.bg,
-                              color: statusColor.text,
-                              border: `1px solid ${statusColor.text}40`,
-                            }}
-                          >
-                            {doc.status === 'accepted' && <CheckCircle2 size={12} />}
-                            {doc.status === 'viewed' && <Eye size={12} />}
-                            {doc.status === 'sent' && <Send size={12} />}
-                            {DOC_STATUS_LABELS[doc.status]}
-                          </span>
+                          <Badge status={doc.status} />
                         </td>
 
                         {/* Total */}
@@ -332,6 +319,38 @@ export default function DocumentsPage() {
                 </tbody>
               </table>
             </div>
+
+            {Math.ceil(filtered.length / pageSize) > 1 && (
+              <div className="flex items-center justify-between p-4 border-t border-white/10 text-xs text-gray-400">
+                <span>
+                  Mostrando {(currentPage - 1) * pageSize + 1} a{' '}
+                  {Math.min(currentPage * pageSize, filtered.length)} de {filtered.length} documentos
+                </span>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                    disabled={currentPage === 1}
+                    className="btn btn-secondary btn-sm p-1.5 disabled:opacity-30"
+                    title="Página anterior"
+                  >
+                    <ChevronLeft size={16} />
+                  </button>
+                  <span className="font-mono px-2">
+                    {currentPage} / {Math.ceil(filtered.length / pageSize)}
+                  </span>
+                  <button
+                    onClick={() =>
+                      setCurrentPage((p) => Math.min(Math.ceil(filtered.length / pageSize), p + 1))
+                    }
+                    disabled={currentPage === Math.ceil(filtered.length / pageSize)}
+                    className="btn btn-secondary btn-sm p-1.5 disabled:opacity-30"
+                    title="Página siguiente"
+                  >
+                    <ChevronRight size={16} />
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         ) : (
           <div className="empty-state my-8">

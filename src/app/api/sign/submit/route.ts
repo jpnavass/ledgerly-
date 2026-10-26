@@ -37,6 +37,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    if (!doc.org_id) {
+      return NextResponse.json(
+        { error: 'El documento no tiene una organización asignada.' },
+        { status: 400 }
+      );
+    }
+
     assertCanSignDocument(doc);
 
     // Servidor fija la fecha y hora oficial (eIDAS simple)

@@ -99,6 +99,7 @@ describe('Seguridad, Inmutabilidad y Limpieza de Código (Fase 12)', () => {
       ['gemi', 'ni'].join(''),
       ['anti', 'gravity'].join(''),
       ['asistente', 'virtual'].join(' '),
+      'org-main',
     ];
 
     const scanDirs = [

@@ -1,0 +1,52 @@
+/* ============================================================================
+   UTILIDADES Y MICRO-ANIMACIONES — PRESUPUESTO EXPRESS ENTERPRISE
+   ============================================================================ */
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulseSubtle {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn var(--dur) var(--ease) forwards;
+}
+
+.animate-pulse-subtle {
+  animation: pulseSubtle 2s var(--ease) infinite;
+}
+
+/* Reducción de movimiento */
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-in,
+  .animate-pulse-subtle {
+    animation: none !important;
+  }
+}
+
+/* Utilidades de truncamiento y texto */
+.text-balance {
+  text-wrap: balance;
+}
+
+.text-pretty {
+  text-wrap: pretty;
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}

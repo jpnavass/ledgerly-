@@ -1,5 +1,5 @@
 // ============================================================================
-// Generador y Sellado de Documentos PDF Oficiales — Presupuesto Express
+// Generador de Documentos PDF Oficiales — Presupuesto Express Enterprise
 // ============================================================================
 
 import React from 'react';

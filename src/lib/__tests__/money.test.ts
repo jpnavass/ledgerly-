@@ -18,6 +18,12 @@ describe('FASE 1: Módulo de Aritmética Monetaria Entera (money.ts)', () => {
     assert.strictEqual(roundHalfUp(4999.49), 4999);
     assert.strictEqual(roundHalfUp(-4999.5), -5000);
     assert.strictEqual(roundHalfUp(-4999.49), -4999);
+    assert.strictEqual(roundHalfUp(2.5), 3);
+    assert.strictEqual(roundHalfUp(0.5), 1);
+    assert.strictEqual(roundHalfUp(-2.5), -3);
+    assert.strictEqual(roundHalfUp(-0.5), -1);
+    assert.strictEqual(roundHalfUp(-2.4), -2);
+    assert.strictEqual(roundHalfUp(-2.6), -3);
     assert.strictEqual(roundHalfUp(0), 0);
   });
 

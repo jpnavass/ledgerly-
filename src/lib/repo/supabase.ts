@@ -3,8 +3,8 @@
 // Integración con base de datos Postgres y políticas RLS
 // ============================================================================
 
-import type { DataRepository, DocumentFilterParams } from './types.ts';
-import type { Document, Client, CatalogItem, Payment, AuditEvent, Org, OrgSettings, License, Membership } from '../../types/index.ts';
+import type { DataRepository, DocumentFilterParams, PaginationParams } from './types.ts';
+import type { Document, Client, CatalogItem, Payment, AuditEvent, Org, OrgSettings, License, Membership, UserRole } from '../../types/index.ts';
 import { createClient } from '../supabase/client.ts';
 
 export class SupabaseRepository implements DataRepository {
@@ -356,4 +356,20 @@ export class SupabaseRepository implements DataRepository {
     if (error) throw error;
     return true;
   }
+
+  async getUserActiveMembership(): Promise<{ orgId: string; role: UserRole } | null> {
+    const supabase = this.getClient();
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    if (userError || !user) return null;
+    const { data, error } = await supabase
+      .from('memberships')
+      .select('org_id, role')
+      .eq('user_id', user.id)
+      .eq('is_active', true)
+      .limit(1)
+      .maybeSingle();
+    if (error || !data) return null;
+    return { orgId: data.org_id, role: data.role as UserRole };
+  }
 }
+

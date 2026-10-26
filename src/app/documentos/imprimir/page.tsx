@@ -262,8 +262,8 @@ function PrintDocumentContent() {
                     <span>✓</span>
                     <span>
                       {doc.signature_data?.startsWith('data:image/')
-                        ? 'Firma digital eIDAS registrada con sello de tiempo criptográfico SHA-256'
-                        : doc.signature_data || 'Firmado electrónicamente con hash SHA-256 verificado'}
+                        ? 'Firma electrónica simple (eIDAS Art. 25.1) registrada con hash SHA-256'
+                        : doc.signature_data || 'Firma electrónica simple verificada'}
                     </span>
                   </p>
                 </div>

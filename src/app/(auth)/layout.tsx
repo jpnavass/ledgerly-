@@ -8,7 +8,7 @@ export default function AuthLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen bg-[#0A0D14] text-slate-100 flex flex-col justify-center items-center px-4 py-12 relative overflow-hidden">
+    <div className="min-h-screen bg-[var(--bg-app)] text-slate-100 flex flex-col justify-center items-center px-4 py-12 relative overflow-hidden">
       {/* Luces y efectos de fondo */}
       <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-blue-600/10 rounded-full blur-[120px] pointer-events-none" />
       <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-indigo-600/10 rounded-full blur-[120px] pointer-events-none" />
@@ -34,7 +34,7 @@ export default function AuthLayout({
       </div>
 
       {/* Tarjeta de Contenido */}
-      <div className="w-full max-w-md bg-[#111622]/90 border border-slate-800/80 rounded-2xl shadow-2xl backdrop-blur-xl p-8 relative z-10">
+      <div className="w-full max-w-md bg-[var(--bg-surface)]/90 border border-slate-800/80 rounded-2xl shadow-2xl backdrop-blur-xl p-8 relative z-10">
         {children}
       </div>
 

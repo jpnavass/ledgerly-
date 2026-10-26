@@ -1,14 +1,18 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import {
   LayoutDashboard,
   FileText,
+  Truck,
+  FileCheck2,
+  Receipt,
   Building2,
   Package,
   CreditCard,
+  ReceiptCent,
   BarChart3,
   Settings,
   ChevronLeft,
@@ -20,18 +24,22 @@ import {
   X,
   ArrowUpRight,
   Menu,
+  HelpCircle,
+  Sparkles,
 } from 'lucide-react';
 import { getOrganization, getDocuments, syncStoreWithRepository } from '@/lib/store';
 import { getRepository } from '@/lib/repo';
+import ThemeSwitcher from '@/components/theme/ThemeSwitcher';
 
-const NAV_ITEMS = [
-  { href: '/', label: 'Panel Principal', icon: LayoutDashboard },
-  { href: '/documentos', label: 'Documentos', icon: FileText },
-  { href: '/clientes', label: 'Clientes & Cuentas', icon: Building2 },
-  { href: '/catalogo', label: 'Tarifario Oficial', icon: Package },
-  { href: '/cobros', label: 'Tesorería y Cobros', icon: CreditCard },
-  { href: '/informes', label: 'Informes Financieros', icon: BarChart3 },
-];
+interface NavSection {
+  title?: string;
+  items: {
+    href: string;
+    label: string;
+    icon: React.ComponentType<{ size?: number; className?: string }>;
+    count?: number;
+  }[];
+}
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -39,8 +47,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
-  const [notifOpen, setNotifOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [newMenuOpen, setNewMenuOpen] = useState(false);
   const [org, setOrg] = useState<any>(null);
   const [docs, setDocs] = useState<any[]>([]);
 
@@ -66,7 +74,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           setOrg(orgData || currentOrg);
           setDocs(docsData);
         }
-      } catch (e) {
+      } catch {
         if (mounted) {
           setOrg(getOrganization());
           setDocs(getDocuments());
@@ -84,7 +92,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
-  // Atajo de teclado ⌘K / Ctrl+K y ⌘B para contraer
+  // Atajos de teclado ⌘K / Ctrl+K y ⌘B para contraer
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
@@ -97,7 +105,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       }
       if (e.key === 'Escape') {
         setSearchOpen(false);
-        setNotifOpen(false);
+        setNewMenuOpen(false);
       }
     };
     window.addEventListener('keydown', handleKeyDown);
@@ -108,6 +116,44 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     if (href === '/') return pathname === '/';
     return pathname.startsWith(href);
   };
+
+  const navSections: NavSection[] = [
+    {
+      items: [
+        { href: '/', label: 'Panel Principal', icon: LayoutDashboard },
+      ],
+    },
+    {
+      title: 'Ventas & Facturación',
+      items: [
+        { href: '/documentos', label: 'Presupuestos', icon: FileText, count: docs.filter((d) => d.doc_type === 'quote').length },
+        { href: '/documentos?type=delivery_note', label: 'Albaranes', icon: Truck, count: docs.filter((d) => d.doc_type === 'delivery_note').length },
+        { href: '/documentos?type=proforma', label: 'Proformas', icon: FileCheck2, count: docs.filter((d) => d.doc_type === 'proforma').length },
+        { href: '/documentos?type=invoice', label: 'Facturas', icon: Receipt, count: docs.filter((d) => d.doc_type === 'invoice').length },
+      ],
+    },
+    {
+      title: 'Tesorería & Caja',
+      items: [
+        { href: '/cobros', label: 'Cobros y Vencimientos', icon: CreditCard },
+        { href: '/gastos', label: 'Gastos de Proveedor', icon: ReceiptCent },
+      ],
+    },
+    {
+      title: 'Contactos & Catálogo',
+      items: [
+        { href: '/clientes', label: 'Clientes y Cuentas', icon: Building2 },
+        { href: '/catalogo', label: 'Catálogo de Partidas', icon: Package },
+      ],
+    },
+    {
+      title: 'Análisis & Configuración',
+      items: [
+        { href: '/informes', label: 'Informes y Métricas', icon: BarChart3 },
+        { href: '/ajustes', label: 'Ajustes Fiscales', icon: Settings },
+      ],
+    },
+  ];
 
   const filteredDocs = docs.filter(
     (d) =>
@@ -120,37 +166,37 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <div
-      className="flex min-h-screen bg-[var(--bg-primary)]"
+      className="flex min-h-screen bg-[var(--bg-app)] text-[var(--text-primary)]"
       data-sidebar={collapsed ? 'collapsed' : 'expanded'}
       data-sidebar-open={mobileOpen ? 'true' : 'false'}
     >
-      {/* Overlay para móvil */}
+      {/* Capa de fondo en móvil */}
       {mobileOpen && (
         <div
-          className="fixed inset-0 bg-black/70 backdrop-blur-sm z-40 lg:hidden"
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 lg:hidden"
           onClick={() => setMobileOpen(false)}
         />
       )}
 
       {/* Modal Buscador Rápido (Command Palette ⌘K) */}
       {searchOpen && (
-        <div className="fixed inset-0 z-50 flex items-start justify-center pt-20 px-4 bg-black/75 backdrop-blur-md">
-          <div className="w-full max-w-2xl bg-[#0E111B] border border-white/15 rounded-2xl shadow-2xl overflow-hidden animate-fade-in">
-            <div className="flex items-center px-4 py-3.5 border-b border-white/10 gap-3">
-              <Search size={18} className="text-indigo-400" />
+        <div className="fixed inset-0 z-50 flex items-start justify-center pt-20 px-4 bg-black/70 backdrop-blur-md animate-fade-in">
+          <div className="w-full max-w-2xl bg-[var(--bg-elevated)] border border-[var(--border-default)] rounded-2xl shadow-2xl overflow-hidden">
+            <div className="flex items-center px-4 py-3.5 border-b border-[var(--border-subtle)] gap-3">
+              <Search size={18} className="text-[var(--accent-fg)]" />
               <input
                 type="text"
-                placeholder="Buscar presupuestos, albaranes, facturas o clientes... (ESC para salir)"
-                className="w-full bg-transparent border-none text-white text-sm focus:outline-none placeholder:text-gray-500"
+                placeholder="Buscar presupuestos, albaranes, facturas, clientes... (ESC para salir)"
+                className="w-full bg-transparent border-none text-[var(--text-primary)] text-sm focus:outline-none placeholder:text-[var(--text-tertiary)]"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 autoFocus
               />
-              <span className="text-[11px] font-mono bg-white/10 px-2 py-0.5 rounded text-gray-400">ESC</span>
+              <span className="text-[11px] font-mono bg-[var(--bg-surface-2)] px-2 py-0.5 rounded text-[var(--text-secondary)]">ESC</span>
             </div>
 
             <div className="max-h-80 overflow-y-auto p-2">
-              <div className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider px-3 py-1.5">
+              <div className="text-[11px] font-semibold text-[var(--text-tertiary)] uppercase tracking-wider px-3 py-1.5">
                 Resultados
               </div>
               {filteredDocs.length > 0 ? (
@@ -161,24 +207,24 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                       setSearchOpen(false);
                       router.push(`/documentos/editor?id=${doc.id}`);
                     }}
-                    className="w-full text-left flex items-center justify-between px-3 py-2.5 rounded-lg hover:bg-white/5 transition-colors group"
+                    className="w-full text-left flex items-center justify-between px-3 py-2.5 rounded-lg hover:bg-[var(--bg-surface-2)] transition-colors group"
                   >
                     <div className="flex items-center gap-3">
-                      <span className="font-mono text-xs font-semibold px-2 py-0.5 rounded bg-indigo-500/15 text-indigo-300 border border-indigo-500/30">
+                      <span className="font-mono text-xs font-semibold px-2 py-0.5 rounded bg-[var(--accent-subtle)] text-[var(--accent-fg)] border border-[var(--border-subtle)]">
                         {doc.series ? `${doc.series}-${String(doc.number || 0).padStart(4, '0')}` : 'BORRADOR'}
                       </span>
                       <div>
-                        <p className="text-sm font-medium text-gray-200 group-hover:text-white line-clamp-1">
+                        <p className="text-sm font-medium text-[var(--text-primary)] line-clamp-1">
                           {doc.title}
                         </p>
-                        <p className="text-xs text-gray-400">{doc.client?.name || 'Sin cliente asignado'}</p>
+                        <p className="text-xs text-[var(--text-secondary)]">{doc.client?.name || 'Sin cliente asignado'}</p>
                       </div>
                     </div>
-                    <ArrowUpRight size={16} className="text-gray-500 group-hover:text-indigo-400" />
+                    <ArrowUpRight size={16} className="text-[var(--text-tertiary)] group-hover:text-[var(--accent-fg)]" />
                   </button>
                 ))
               ) : (
-                <div className="py-8 text-center text-sm text-gray-400">
+                <div className="py-8 text-center text-sm text-[var(--text-secondary)]">
                   {docs.length === 0
                     ? 'No hay documentos registrados todavía.'
                     : `No se encontraron documentos para "${searchQuery}".`}
@@ -189,34 +235,34 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         </div>
       )}
 
-      {/* Sidebar Corporativo */}
+      {/* Barra Lateral (Sidebar) */}
       <aside
-        className={`sidebar ${mobileOpen ? 'open' : ''}`}
-        data-collapsed={collapsed ? 'true' : 'false'}
+        className={`fixed inset-y-0 left-0 z-40 lg:static flex flex-col bg-[var(--bg-surface)] border-r border-[var(--border-subtle)] transition-all duration-200 ease-in-out ${
+          collapsed ? 'w-[76px]' : 'w-[270px]'
+        } ${mobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}
       >
-        {/* Marca Empresarial */}
-        <div className="flex items-center gap-3 px-4 h-[68px] border-b border-[var(--border-subtle)] flex-shrink-0 bg-[#0B0D14]">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 via-indigo-600 to-purple-700 flex items-center justify-center flex-shrink-0 shadow-lg shadow-indigo-500/25 border border-indigo-400/30">
-            <span className="font-black text-white text-base tracking-tight font-mono">{orgInitial}</span>
+        {/* Identidad de la Empresa */}
+        <div className="flex items-center gap-3 px-4 h-[68px] border-b border-[var(--border-subtle)] flex-shrink-0 bg-[var(--bg-surface)]">
+          <div className="w-10 h-10 rounded-xl bg-[var(--accent)] text-[var(--on-accent)] flex items-center justify-center flex-shrink-0 shadow-sm font-bold text-sm font-mono">
+            {orgInitial}
           </div>
           {!collapsed && (
             <div className="animate-fade-in overflow-hidden">
-              <h1 className="text-sm font-bold text-white tracking-tight leading-tight truncate">
+              <h1 className="text-sm font-bold text-[var(--text-primary)] tracking-tight leading-tight truncate">
                 {org?.legal_name || org?.name || 'Presupuesto Express'}
               </h1>
               <div className="flex items-center gap-1.5 mt-0.5">
-                <ShieldCheck size={12} className="text-emerald-400 flex-shrink-0" />
-                <span className="text-[10.5px] font-medium text-emerald-400 tracking-wide font-mono uppercase">
-                  Enterprise
+                <ShieldCheck size={12} className="text-[var(--success-fg)] flex-shrink-0" />
+                <span className="text-[10px] font-semibold text-[var(--success-fg)] font-mono uppercase">
+                  VeriFactu Ready
                 </span>
-                {org?.tax_id && <span className="text-[10px] text-gray-400">· {org.tax_id}</span>}
+                {org?.tax_id && <span className="text-[10px] text-[var(--text-tertiary)]">· {org.tax_id}</span>}
               </div>
             </div>
           )}
 
-          {/* Botón cerrar en móvil */}
           <button
-            className="ml-auto lg:hidden btn-ghost btn-icon"
+            className="ml-auto lg:hidden p-1.5 rounded-lg text-[var(--text-secondary)] hover:bg-[var(--bg-surface-2)]"
             onClick={() => setMobileOpen(false)}
             aria-label="Cerrar navegación lateral"
           >
@@ -224,73 +270,74 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           </button>
         </div>
 
-        {/* Enlaces de Navegación */}
-        <nav className="flex-1 px-3 py-4 space-y-1.5 overflow-y-auto">
-          {NAV_ITEMS.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={`sidebar-link ${isActive(item.href) ? 'active' : ''}`}
-              onClick={() => setMobileOpen(false)}
-              title={collapsed ? item.label : undefined}
-            >
-              <item.icon size={19} className="flex-shrink-0" />
-              {!collapsed && (
-                <div className="flex-1 flex items-center justify-between sidebar-label">
-                  <span>{item.label}</span>
-                  {item.href === '/documentos' && docs.length > 0 && (
-                    <span className="text-[11px] font-mono font-semibold px-2 py-0.5 rounded-full bg-white/10 text-gray-300">
-                      {docs.length}
-                    </span>
-                  )}
+        {/* Enlaces de Navegación agrupados */}
+        <nav className="flex-1 px-3 py-4 space-y-4 overflow-y-auto">
+          {navSections.map((section, sIdx) => (
+            <div key={section.title || sIdx} className="space-y-1">
+              {section.title && !collapsed && (
+                <div className="px-2 pb-1 text-[10px] font-bold text-[var(--text-tertiary)] uppercase tracking-wider">
+                  {section.title}
                 </div>
               )}
-            </Link>
+              {section.items.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className="sidebar-link"
+                  data-active={isActive(item.href) ? 'true' : 'false'}
+                  onClick={() => setMobileOpen(false)}
+                  title={collapsed ? item.label : undefined}
+                >
+                  <item.icon size={18} className="flex-shrink-0" />
+                  {!collapsed && (
+                    <div className="flex-1 flex items-center justify-between">
+                      <span className="truncate">{item.label}</span>
+                      {typeof item.count === 'number' && item.count > 0 && (
+                        <span className="text-[11px] font-mono font-semibold px-2 py-0.5 rounded-full bg-[var(--bg-surface-2)] text-[var(--text-secondary)]">
+                          {item.count}
+                        </span>
+                      )}
+                    </div>
+                  )}
+                </Link>
+              ))}
+            </div>
           ))}
         </nav>
 
-        {/* Zona Inferior de la Barra Lateral */}
-        <div className="p-3 border-t border-[var(--border-subtle)] space-y-1.5 bg-[#0A0C13]">
+        {/* Pie de Barra Lateral: Estado de Plan y Plegado */}
+        <div className="p-3 border-t border-[var(--border-subtle)] space-y-2 bg-[var(--bg-surface)]">
           {!collapsed && (
-            <div className="px-3 py-2.5 rounded-xl bg-white/[0.03] border border-white/[0.05] mb-2 sidebar-label">
+            <div className="p-2.5 rounded-xl bg-[var(--bg-surface-2)] border border-[var(--border-subtle)]">
               <div className="flex items-center justify-between text-xs mb-1">
-                <span className="text-gray-400">Aislamiento RLS</span>
-                <span className="flex items-center gap-1 text-emerald-400 font-medium">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                  Seguro
+                <span className="text-[var(--text-secondary)] font-medium">Plan Enterprise</span>
+                <span className="text-[10px] font-bold text-[var(--accent-fg)] uppercase">Activo</span>
+              </div>
+              <div className="flex items-center justify-between text-[11px] text-[var(--text-tertiary)]">
+                <span>Versión v2.0</span>
+                <span className="flex items-center gap-1 text-[var(--success-fg)]">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[var(--success-fg)] animate-pulse"></span>
+                  Conforme RD 1007/2023
                 </span>
               </div>
-              <p className="text-[11px] text-gray-400 font-mono truncate">
-                {org?.id ? `Tenant: ${org.id.slice(0, 8)}...` : 'Modo Seguro Local'}
-              </p>
             </div>
           )}
 
-          <Link
-            href="/ajustes"
-            className={`sidebar-link ${isActive('/ajustes') ? 'active' : ''}`}
-            onClick={() => setMobileOpen(false)}
-            title={collapsed ? 'Ajustes Fiscales' : undefined}
-          >
-            <Settings size={19} className="flex-shrink-0" />
-            {!collapsed && <span className="sidebar-label">Ajustes Fiscales</span>}
-          </Link>
-
           {/* Botón para contraer en escritorio */}
           <button
-            className="sidebar-link w-full hidden lg:flex items-center justify-between text-gray-400 hover:text-white"
+            className="sidebar-link w-full hidden lg:flex items-center justify-between text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
             onClick={() => setCollapsed(!collapsed)}
             aria-label={collapsed ? 'Expandir barra lateral' : 'Contraer barra lateral'}
           >
             {collapsed ? (
-              <ChevronRight size={19} className="flex-shrink-0 mx-auto" />
+              <ChevronRight size={18} className="mx-auto" />
             ) : (
               <>
-                <div className="flex items-center gap-3">
-                  <ChevronLeft size={19} className="flex-shrink-0" />
-                  <span className="text-xs sidebar-label">Plegar menú lateral</span>
+                <div className="flex items-center gap-2">
+                  <ChevronLeft size={18} />
+                  <span className="text-xs">Plegar menú</span>
                 </div>
-                <span className="kbd sidebar-label">⌘B</span>
+                <span className="text-[10px] font-mono bg-[var(--bg-surface-2)] px-1.5 py-0.5 rounded text-[var(--text-tertiary)]">⌘B</span>
               </>
             )}
           </button>
@@ -298,12 +345,12 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       </aside>
 
       {/* Contenido Principal con Barra Superior */}
-      <div className="main-content flex-1 flex flex-col min-w-0">
-        {/* Cabecera Superior Corporativa (Top Bar) */}
-        <header className="top-header sticky top-0 z-30 h-[68px] border-b border-[var(--border-subtle)] bg-[#090B12]/85 backdrop-blur-xl px-4 md:px-8 flex items-center justify-between">
+      <div className="flex-1 flex flex-col min-w-0">
+        {/* Cabecera Superior Corporativa (Topbar) */}
+        <header className="top-header sticky top-0 z-30 h-[68px] border-b border-[var(--border-subtle)] bg-[var(--bg-surface)]/90 backdrop-blur-xl px-4 md:px-8 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <button
-              className="lg:hidden p-2 rounded-lg bg-white/5 hover:bg-white/10 text-gray-300 min-h-[44px] min-w-[44px] flex items-center justify-center"
+              className="lg:hidden p-2 rounded-lg bg-[var(--bg-surface-2)] text-[var(--text-primary)] min-h-[44px] min-w-[44px] flex items-center justify-center"
               onClick={() => setMobileOpen(true)}
               aria-label="Abrir navegación lateral"
             >
@@ -313,61 +360,98 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             {/* Buscador Rápido (⌘K) */}
             <button
               onClick={() => setSearchOpen(true)}
-              className="hidden sm:flex items-center gap-3 px-3.5 py-1.5 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] text-gray-400 text-xs transition-colors w-72 md:w-96 min-h-[38px]"
+              className="hidden sm:flex items-center gap-3 px-3.5 py-1.5 rounded-lg bg-[var(--bg-surface-2)] border border-[var(--border-default)] text-[var(--text-secondary)] text-xs transition-colors w-72 md:w-96 min-h-[38px] hover:border-[var(--border-input)]"
             >
-              <Search size={15} className="text-gray-400" />
-              <span className="flex-1 text-left">Buscar documentos, clientes o CIF...</span>
-              <span className="kbd">⌘K</span>
+              <Search size={15} className="text-[var(--text-tertiary)]" />
+              <span className="flex-1 text-left">Buscar documentos, clientes o NIF...</span>
+              <span className="text-[10px] font-mono bg-[var(--bg-surface)] px-1.5 py-0.5 rounded border border-[var(--border-subtle)] text-[var(--text-tertiary)]">⌘K</span>
             </button>
           </div>
 
           {/* Acciones Derechas */}
           <div className="flex items-center gap-3">
-            {/* Notificaciones */}
+            {/* Conmutador de Temas */}
+            <ThemeSwitcher />
+
+            {/* Menú "+ Nuevo" */}
             <div className="relative">
               <button
-                onClick={() => setNotifOpen(!notifOpen)}
-                className="relative p-2 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] text-gray-300 transition-colors min-h-[40px] min-w-[40px] flex items-center justify-center"
-                title="Centro de avisos"
-                aria-label="Centro de avisos del sistema"
+                onClick={() => setNewMenuOpen(!newMenuOpen)}
+                className="btn btn-primary btn-sm flex items-center gap-1.5"
+                aria-expanded={newMenuOpen}
               >
-                <Bell size={18} />
+                <Plus size={16} />
+                <span className="hidden sm:inline">Nuevo</span>
               </button>
 
-              {/* Panel Desplegable de Notificaciones */}
-              {notifOpen && (
-                <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-[#0F121C] border border-white/15 rounded-2xl shadow-2xl p-4 z-50 animate-fade-in">
-                  <div className="flex items-center justify-between pb-3 border-b border-white/10">
-                    <span className="font-semibold text-sm text-white">Avisos del Sistema</span>
-                    <span className="text-[11px] text-gray-400 font-mono">0 pendientes</span>
+              {newMenuOpen && (
+                <div className="dropdown-menu absolute right-0 mt-2 w-52 animate-fade-in">
+                  <div className="px-3 py-1.5 text-[10px] font-bold text-[var(--text-tertiary)] uppercase tracking-wider">
+                    Emisión Rápida
                   </div>
-                  <div className="py-6 text-center text-xs text-gray-400">
-                    No hay notificaciones ni avisos pendientes.
-                  </div>
+                  <Link
+                    href="/documentos/nuevo?type=quote"
+                    onClick={() => setNewMenuOpen(false)}
+                    className="dropdown-item"
+                  >
+                    <FileText size={15} />
+                    <span>Presupuesto</span>
+                  </Link>
+                  <Link
+                    href="/documentos/nuevo?type=delivery_note"
+                    onClick={() => setNewMenuOpen(false)}
+                    className="dropdown-item"
+                  >
+                    <Truck size={15} />
+                    <span>Albarán</span>
+                  </Link>
+                  <Link
+                    href="/documentos/nuevo?type=proforma"
+                    onClick={() => setNewMenuOpen(false)}
+                    className="dropdown-item"
+                  >
+                    <FileCheck2 size={15} />
+                    <span>Factura Proforma</span>
+                  </Link>
+                  <Link
+                    href="/documentos/nuevo?type=invoice"
+                    onClick={() => setNewMenuOpen(false)}
+                    className="dropdown-item"
+                  >
+                    <Receipt size={15} />
+                    <span>Factura Oficial</span>
+                  </Link>
+                  <div className="border-t border-[var(--border-subtle)] my-1"></div>
+                  <Link
+                    href="/clientes?action=new"
+                    onClick={() => setNewMenuOpen(false)}
+                    className="dropdown-item"
+                  >
+                    <Building2 size={15} />
+                    <span>Nuevo Cliente</span>
+                  </Link>
+                  <Link
+                    href="/gastos?action=new"
+                    onClick={() => setNewMenuOpen(false)}
+                    className="dropdown-item"
+                  >
+                    <ReceiptCent size={15} />
+                    <span>Registrar Gasto</span>
+                  </Link>
                 </div>
               )}
             </div>
 
-            {/* Botón "+ Nuevo Presupuesto" */}
-            <Link
-              href="/documentos/nuevo"
-              className="btn btn-primary btn-sm flex items-center gap-1.5"
-            >
-              <Plus size={16} />
-              <span className="hidden sm:inline">Nuevo Presupuesto</span>
-              <span className="sm:hidden">Nuevo</span>
-            </Link>
-
-            {/* Identidad Corporativa */}
-            <div className="flex items-center gap-2.5 pl-2 border-l border-white/10">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-indigo-600 to-indigo-400 border border-white/20 flex items-center justify-center text-xs font-bold text-white shadow-sm font-mono">
+            {/* Identidad de la Empresa */}
+            <div className="flex items-center gap-2.5 pl-2 border-l border-[var(--border-subtle)]">
+              <div className="w-8 h-8 rounded-full bg-[var(--accent)] text-[var(--on-accent)] flex items-center justify-center text-xs font-bold font-mono">
                 {orgInitial}
               </div>
               <div className="hidden lg:block text-left">
-                <p className="text-xs font-semibold text-white leading-tight truncate max-w-[140px]">
-                  {org?.legal_name || 'Organización'}
+                <p className="text-xs font-semibold text-[var(--text-primary)] leading-tight truncate max-w-[140px]">
+                  {org?.legal_name || org?.name || 'Organización'}
                 </p>
-                <p className="text-[10px] text-gray-400 font-mono">
+                <p className="text-[10px] text-[var(--text-secondary)] font-mono">
                   {org?.tax_id || 'Administración'}
                 </p>
               </div>
@@ -375,7 +459,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           </div>
         </header>
 
-        {/* Contenido de la Página */}
+        {/* Contenido Principal */}
         <main className="flex-1">
           {children}
         </main>

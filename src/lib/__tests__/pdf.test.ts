@@ -1,5 +1,5 @@
 // ============================================================================
-// Pruebas Unitarias — Generación y Sellado de PDF Oficial (pdf.test.ts)
+// Pruebas Unitarias — Generación de PDF Oficial y Cierre Documental (pdf.test.ts)
 // ============================================================================
 
 import { describe, it } from 'node:test';

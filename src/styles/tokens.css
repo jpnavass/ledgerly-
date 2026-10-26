@@ -1,0 +1,411 @@
+/* ============================================================================
+   SISTEMA DE TOKENS DE DISEÑO OFICIAL — PRESUPUESTO EXPRESS ENTERPRISE
+   Tokens Semánticos WCAG 2.2 AA (Claro, Oscuro, Alto Contraste y 5 Acentos)
+   ============================================================================ */
+
+:root {
+  color-scheme: light;
+
+  /* Superficies y Fondos Semánticos (Claro) */
+  --bg-app: #F5F6F8;
+  --bg-surface: #FFFFFF;
+  --bg-surface-2: #F0F2F5;
+  --bg-elevated: #FFFFFF;
+
+  /* Bordes Semánticos (Claro) */
+  --border-subtle: #E4E7EC;
+  --border-default: #D0D5DD;
+  --border-input: #8A94A6;
+
+  /* Tipografía Semántica (Claro) — Todas >= 4.5:1 */
+  --text-primary: #101828;
+  --text-secondary: #475467;
+  --text-tertiary: #5B6577;
+
+  /* Acento por Defecto (Indigo - Claro) */
+  --accent: #4F46E5;
+  --accent-hover: #4338CA;
+  --accent-fg: #4338CA;
+  --on-accent: #FFFFFF;
+  --accent-subtle: #EEF0FF;
+
+  /* Tonos Semánticos de Estado (Claro) — Pares fg/bg >= 4.5:1 */
+  --success-fg: #027A48;
+  --success-bg: #ECFDF3;
+  --warning-fg: #B54708;
+  --warning-bg: #FFFAEB;
+  --danger-fg: #B42318;
+  --danger-bg: #FEF3F2;
+  --info-fg: #175CD3;
+  --info-bg: #EFF8FF;
+  --violet-fg: #6941C6;
+  --violet-bg: #F9F5FF;
+  --teal-fg: #0E7490;
+  --teal-bg: #F0FDFA;
+  --neutral-fg: #344054;
+  --neutral-bg: #F2F4F7;
+  --muted-fg: #475467;
+  --muted-bg: #F8F9FA;
+
+  /* Espaciado, Radios y Controles */
+  --space-unit: 4px;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-full: 9999px;
+
+  --control-h: 40px;
+  --row-h: 44px;
+  --font-scale: 1;
+
+  /* Sombras y Foco */
+  --shadow-sm: 0 1px 2px rgba(16, 24, 40, 0.05);
+  --shadow-md: 0 4px 8px -2px rgba(16, 24, 40, 0.1), 0 2px 4px -2px rgba(16, 24, 40, 0.06);
+  --shadow-lg: 0 12px 16px -4px rgba(16, 24, 40, 0.08), 0 4px 6px -2px rgba(16, 24, 40, 0.03);
+  --focus-ring: 2px solid var(--accent-fg);
+
+  /* Transición */
+  --dur-fast: 120ms;
+  --dur: 200ms;
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Modo Oscuro vía Preferencia del Sistema */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+
+    /* Superficies y Fondos Semánticos (Oscuro) */
+    --bg-app: #0B0D12;
+    --bg-surface: #12151D;
+    --bg-surface-2: #181C27;
+    --bg-elevated: #1D2230;
+
+    /* Bordes Semánticos (Oscuro) */
+    --border-subtle: #232838;
+    --border-default: #2E3447;
+    --border-input: #6B7390;
+
+    /* Tipografía Semántica (Oscuro) — Todas >= 4.5:1 */
+    --text-primary: #E8EAF0;
+    --text-secondary: #A3A9BC;
+    --text-tertiary: #838BA3;
+
+    /* Acento por Defecto (Indigo - Oscuro) */
+    --accent: #4F46E5;
+    --accent-hover: #6366F1;
+    --accent-fg: #A5B4FC;
+    --on-accent: #FFFFFF;
+    --accent-subtle: #1B1E3A;
+
+    /* Tonos Semánticos de Estado (Oscuro) — Pares fg/bg >= 4.5:1 */
+    --success-fg: #6EE7B7;
+    --success-bg: #0F2A1E;
+    --warning-fg: #FCD34D;
+    --warning-bg: #2E2108;
+    --danger-fg: #FCA5A5;
+    --danger-bg: #331415;
+    --info-fg: #7DD3FC;
+    --info-bg: #0E2536;
+    --violet-fg: #D8B4FE;
+    --violet-bg: #281B3D;
+    --teal-fg: #5EEAD4;
+    --teal-bg: #0E2E2B;
+    --neutral-fg: #94A3B8;
+    --neutral-bg: #1E293B;
+    --muted-fg: #94A3B8;
+    --muted-bg: #1A1F2C;
+
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.5);
+    --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.6);
+  }
+}
+
+/* Modo Oscuro Forzado por Atributo [data-theme="dark"] (IDÉNTICO al bloque @media) */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  /* Superficies y Fondos Semánticos (Oscuro) */
+  --bg-app: #0B0D12;
+  --bg-surface: #12151D;
+  --bg-surface-2: #181C27;
+  --bg-elevated: #1D2230;
+
+  /* Bordes Semánticos (Oscuro) */
+  --border-subtle: #232838;
+  --border-default: #2E3447;
+  --border-input: #6B7390;
+
+  /* Tipografía Semántica (Oscuro) — Todas >= 4.5:1 */
+  --text-primary: #E8EAF0;
+  --text-secondary: #A3A9BC;
+  --text-tertiary: #838BA3;
+
+  /* Acento por Defecto (Indigo - Oscuro) */
+  --accent: #4F46E5;
+  --accent-hover: #6366F1;
+  --accent-fg: #A5B4FC;
+  --on-accent: #FFFFFF;
+  --accent-subtle: #1B1E3A;
+
+  /* Tonos Semánticos de Estado (Oscuro) — Pares fg/bg >= 4.5:1 */
+  --success-fg: #6EE7B7;
+  --success-bg: #0F2A1E;
+  --warning-fg: #FCD34D;
+  --warning-bg: #2E2108;
+  --danger-fg: #FCA5A5;
+  --danger-bg: #331415;
+  --info-fg: #7DD3FC;
+  --info-bg: #0E2536;
+  --violet-fg: #D8B4FE;
+  --violet-bg: #281B3D;
+  --teal-fg: #5EEAD4;
+  --teal-bg: #0E2E2B;
+  --neutral-fg: #94A3B8;
+  --neutral-bg: #1E293B;
+  --muted-fg: #94A3B8;
+  --muted-bg: #1A1F2C;
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.6);
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+}
+
+/* ============================================================================
+   5 ACENTOS DE MARCA OFICIALES (Claro y Oscuro)
+   ============================================================================ */
+
+/* 1. Indigo */
+:root[data-accent="indigo"] {
+  --accent: #4F46E5;
+  --accent-hover: #4338CA;
+  --accent-fg: #4338CA;
+  --on-accent: #FFFFFF;
+  --accent-subtle: #EEF0FF;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"])[data-accent="indigo"] {
+    --accent: #4F46E5;
+    --accent-hover: #6366F1;
+    --accent-fg: #A5B4FC;
+    --on-accent: #FFFFFF;
+    --accent-subtle: #1B1E3A;
+  }
+}
+:root[data-theme="dark"][data-accent="indigo"] {
+  --accent: #4F46E5;
+  --accent-hover: #6366F1;
+  --accent-fg: #A5B4FC;
+  --on-accent: #FFFFFF;
+  --accent-subtle: #1B1E3A;
+}
+
+/* 2. Azul */
+:root[data-accent="azul"],
+:root[data-accent="blue"] {
+  --accent: #2563EB;
+  --accent-hover: #1D4ED8;
+  --accent-fg: #1D4ED8;
+  --on-accent: #FFFFFF;
+  --accent-subtle: #EFF6FF;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"])[data-accent="azul"],
+  :root:not([data-theme="light"])[data-accent="blue"] {
+    --accent: #2563EB;
+    --accent-hover: #3B82F6;
+    --accent-fg: #93C5FD;
+    --on-accent: #FFFFFF;
+    --accent-subtle: #172554;
+  }
+}
+:root[data-theme="dark"][data-accent="azul"],
+:root[data-theme="dark"][data-accent="blue"] {
+  --accent: #2563EB;
+  --accent-hover: #3B82F6;
+  --accent-fg: #93C5FD;
+  --on-accent: #FFFFFF;
+  --accent-subtle: #172554;
+}
+
+/* 3. Esmeralda */
+:root[data-accent="esmeralda"],
+:root[data-accent="emerald"] {
+  --accent: #047857;
+  --accent-hover: #065F46;
+  --accent-fg: #065F46;
+  --on-accent: #FFFFFF;
+  --accent-subtle: #ECFDF5;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"])[data-accent="esmeralda"],
+  :root:not([data-theme="light"])[data-accent="emerald"] {
+    --accent: #047857;
+    --accent-hover: #059669;
+    --accent-fg: #6EE7B7;
+    --on-accent: #FFFFFF;
+    --accent-subtle: #064E3B;
+  }
+}
+:root[data-theme="dark"][data-accent="esmeralda"],
+:root[data-theme="dark"][data-accent="emerald"] {
+  --accent: #047857;
+  --accent-hover: #059669;
+  --accent-fg: #6EE7B7;
+  --on-accent: #FFFFFF;
+  --accent-subtle: #064E3B;
+}
+
+/* 4. Grafito */
+:root[data-accent="grafito"],
+:root[data-accent="graphite"] {
+  --accent: #334155;
+  --accent-hover: #1E293B;
+  --accent-fg: #1E293B;
+  --on-accent: #FFFFFF;
+  --accent-subtle: #F1F5F9;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"])[data-accent="grafito"],
+  :root:not([data-theme="light"])[data-accent="graphite"] {
+    --accent: #475569;
+    --accent-hover: #64748B;
+    --accent-fg: #CBD5E1;
+    --on-accent: #FFFFFF;
+    --accent-subtle: #1E293B;
+  }
+}
+:root[data-theme="dark"][data-accent="grafito"],
+:root[data-theme="dark"][data-accent="graphite"] {
+  --accent: #475569;
+  --accent-hover: #64748B;
+  --accent-fg: #CBD5E1;
+  --on-accent: #FFFFFF;
+  --accent-subtle: #1E293B;
+}
+
+/* 5. Burdeos */
+:root[data-accent="burdeos"],
+:root[data-accent="burgundy"] {
+  --accent: #9F1239;
+  --accent-hover: #881337;
+  --accent-fg: #881337;
+  --on-accent: #FFFFFF;
+  --accent-subtle: #FFF1F2;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"])[data-accent="burdeos"],
+  :root:not([data-theme="light"])[data-accent="burgundy"] {
+    --accent: #9F1239;
+    --accent-hover: #BE123C;
+    --accent-fg: #FDA4AF;
+    --on-accent: #FFFFFF;
+    --accent-subtle: #4C0519;
+  }
+}
+:root[data-theme="dark"][data-accent="burdeos"],
+:root[data-theme="dark"][data-accent="burgundy"] {
+  --accent: #9F1239;
+  --accent-hover: #BE123C;
+  --accent-fg: #FDA4AF;
+  --on-accent: #FFFFFF;
+  --accent-subtle: #4C0519;
+}
+
+/* ============================================================================
+   DENSIDAD Y ALTO CONTRASTE
+   ============================================================================ */
+
+:root[data-density="compact"] {
+  --control-h: 32px;
+  --row-h: 36px;
+  font-size: 13px;
+}
+
+:root[data-contrast="high"] {
+  --border-default: var(--border-input);
+  --text-secondary: var(--text-primary);
+  --focus-ring: 3px solid var(--accent-fg);
+}
+
+@media (prefers-contrast: more) {
+  :root:not([data-contrast="normal"]) {
+    --border-default: var(--border-input);
+    --text-secondary: var(--text-primary);
+    --focus-ring: 3px solid var(--accent-fg);
+  }
+}
+
+/* Clase transitoria de cambio suave de tema (150ms) */
+.theme-transition,
+.theme-transition *,
+.theme-transition *::before,
+.theme-transition *::after {
+  transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .theme-transition,
+  .theme-transition *,
+  .theme-transition *::before,
+  .theme-transition *::after {
+    transition: none !important;
+  }
+}
+
+/* ============================================================================
+   REGLAS OFICIALES DE IMPRESIÓN (Siempre en modo Claro)
+   ============================================================================ */
+
+@media print {
+  :root,
+  :root[data-theme="dark"],
+  :root[data-theme="light"] {
+    color-scheme: light !important;
+    --bg-app: #FFFFFF !important;
+    --bg-surface: #FFFFFF !important;
+    --bg-surface-2: #F0F2F5 !important;
+    --bg-elevated: #FFFFFF !important;
+    --border-subtle: #E4E7EC !important;
+    --border-default: #D0D5DD !important;
+    --border-input: #8A94A6 !important;
+    --text-primary: #101828 !important;
+    --text-secondary: #475467 !important;
+    --text-tertiary: #5B6577 !important;
+  }
+
+  .no-print,
+  .sidebar,
+  .top-header,
+  [role="dialog"],
+  .toast-region {
+    display: none !important;
+  }
+
+  /* Defecto H-17 Corregido: dentro de #official-print-document nunca ocultar tags estructurales */
+  #official-print-document header,
+  #official-print-document footer,
+  #official-print-document nav,
+  #official-print-document .badge {
+    display: revert !important;
+  }
+
+  #official-print-document button,
+  #official-print-document .btn {
+    display: none !important;
+  }
+
+  thead {
+    display: table-header-group;
+  }
+
+  tr {
+    break-inside: avoid;
+  }
+}
