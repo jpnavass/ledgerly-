@@ -178,7 +178,9 @@ export class LocalStorageRepository implements DataRepository {
 
   async deleteClient(orgId: string, id: string): Promise<boolean> {
     const all = safeGet<Client[]>(LOCAL_STORAGE_KEYS.CLIENTS, []);
-    const filtered = all.filter((c) => c.id !== id);
+    const idx = all.findIndex((c) => c.id === id && (!orgId || c.org_id === orgId));
+    if (idx === -1) return false;
+    const filtered = all.filter((_, i) => i !== idx);
     safeSet(LOCAL_STORAGE_KEYS.CLIENTS, filtered);
     return true;
   }
@@ -222,7 +224,9 @@ export class LocalStorageRepository implements DataRepository {
 
   async deleteCatalogItem(orgId: string, id: string): Promise<boolean> {
     const all = safeGet<CatalogItem[]>(LOCAL_STORAGE_KEYS.CATALOG, []);
-    const filtered = all.filter((i) => i.id !== id);
+    const idx = all.findIndex((i) => i.id === id && (!orgId || i.org_id === orgId));
+    if (idx === -1) return false;
+    const filtered = all.filter((_, index) => index !== idx);
     safeSet(LOCAL_STORAGE_KEYS.CATALOG, filtered);
     return true;
   }
@@ -389,7 +393,9 @@ export class LocalStorageRepository implements DataRepository {
 
   async deleteMember(orgId: string, memberId: string): Promise<boolean> {
     const list = safeGet<Membership[]>(LOCAL_STORAGE_KEYS.MEMBERS, []);
-    const filtered = list.filter((m) => m.id !== memberId || m.org_id !== orgId);
+    const idx = list.findIndex((m) => m.id === memberId && (!orgId || m.org_id === orgId));
+    if (idx === -1) return false;
+    const filtered = list.filter((_, index) => index !== idx);
     safeSet(LOCAL_STORAGE_KEYS.MEMBERS, filtered);
     return true;
   }

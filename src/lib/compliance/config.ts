@@ -32,11 +32,11 @@ export const COMPLIANCE_CONFIG: ComplianceConfig = {
     official_reference: 'Real Decreto 1007/2023 y Orden HAC/1177/2024',
   },
   producer: {
-    name: process.env.SOFTWARE_PRODUCER_NAME || 'Presupuesto Express Enterprise S.L.',
-    tax_id: process.env.SOFTWARE_PRODUCER_TAX_ID || 'B88549126',
-    software_name: 'Presupuesto Express Enterprise',
+    name: process.env.SOFTWARE_PRODUCER_NAME || 'Ledgerly',
+    tax_id: process.env.SOFTWARE_PRODUCER_TAX_ID || '77685568D',
+    software_name: 'Ledgerly',
     software_version: '2.0.0',
-    declaration_date: '2027-01-01',
+    declaration_date: '2026-10-26',
   },
   retention: {
     minimum_years_commercial: 6, // Código de Comercio Art. 30

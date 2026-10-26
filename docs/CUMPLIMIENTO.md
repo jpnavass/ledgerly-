@@ -15,11 +15,14 @@
 | **Numeración correlativa sin saltos ni duplicados** | Real Decreto 1619/2012, Art. 6.1.a | `src/lib/domain/numbering.ts`<br>`supabase/migrations/0003_functions.sql` | `src/lib/__tests__/documents.test.ts` |
 | **Integridad e inalterabilidad de registros de facturación** | Ley 11/2021 (Art. 29.2.j LGT) y RD 1007/2023 | `src/lib/compliance/billing-record.ts`<br>`src/lib/compliance/hash.ts` | `src/lib/__tests__/compliance.test.ts` |
 | **Huella digital SHA-256 encadenada** | Especificación técnica AEAT (Orden HAC/1177/2024) | `src/lib/compliance/billing-record.ts` | `src/lib/__tests__/compliance.test.ts` |
-| **Código QR de cotejo en facturas** | Orden HAC/1177/2024, Anexo II | `src/lib/compliance/qr.ts` | `src/lib/__tests__/compliance.test.ts` |
+| **Código QR de cotejo en facturas** | Parámetros según especificación AEAT, no verificados | `src/lib/compliance/qr.ts` | `src/lib/__tests__/compliance.test.ts`<br>`src/lib/__tests__/pdf.test.ts` |
 | **Registro de eventos inalterable (Audit Log append-only)** | RD 1007/2023, Art. 8 | `src/lib/compliance/audit.ts` | `src/lib/__tests__/compliance.test.ts` |
 | **Conservación mínima de 6 años** | Código de Comercio, Art. 30 | `src/lib/compliance/config.ts` | `src/lib/__tests__/compliance.test.ts` |
 | **Declaración responsable del productor del software** | RD 1007/2023, Art. 13 | `src/app/legal/declaracion-responsable/page.tsx` | Verificación en build y escaneo de configuración |
 | **Firma electrónica simple con evidencias de trazabilidad** | Reglamento (UE) Nº 910/2014 (eIDAS) | `src/lib/compliance/evidence.ts` | `src/lib/__tests__/compliance.test.ts` |
+
+> [!NOTE]
+> **Estado de verificación del código QR:** Los parámetros codificados en la URL (`nif`, `numserie`, `fecha`, `importe`) son parámetros según especificación AEAT, no verificados de forma directa contra el texto definitivo publicado en el BOE. Los parámetros `num`, `total`, `hash` y `csv` han sido explícitamente excluidos al no constar en dicha especificación. El vector de huella de alta en pruebas figura como vector no contrastado con documento oficial.
 
 ---
 

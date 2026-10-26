@@ -79,7 +79,7 @@ export default function DeclaracionResponsablePage() {
                 <ShieldCheck className="w-4 h-4 text-emerald-400" />
                 <span>Documento emitido conforme al Art. 13 del RD 1007/2023</span>
               </div>
-              <span>Madrid, España</span>
+              <span>Málaga, España</span>
             </div>
           </div>
         )}

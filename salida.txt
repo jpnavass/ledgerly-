@@ -1,0 +1,1329 @@
+
+> presupuesto-express-v2@0.1.0 test
+> node --experimental-strip-types --test "tests/**/*.test.ts" "src/**/__tests__/*.test.ts" && node scripts/check-clean.mjs && node scripts/verify-scope.mjs
+
+TAP version 13
+# Subtest: Verificación de Fase 0 — Red de Seguridad y Entorno de Ejecución
+    # Subtest: Verifica soporte nativo de Node.js v22.6+ para ejecución de tests tipados sin transpilador
+    ok 1 - Verifica soporte nativo de Node.js v22.6+ para ejecución de tests tipados sin transpilador
+      ---
+      duration_ms: 1.3218
+      type: 'test'
+      ...
+    # Subtest: Verifica el aislamiento de variables de entorno y ejecución sin red
+    ok 2 - Verifica el aislamiento de variables de entorno y ejecución sin red
+      ---
+      duration_ms: 0.2739
+      type: 'test'
+      ...
+    1..2
+ok 1 - Verificación de Fase 0 — Red de Seguridad y Entorno de Ejecución
+  ---
+  duration_ms: 10.4622
+  type: 'suite'
+  ...
+# Subtest: FASE 1: Motor de Cálculos Económicos y Cumplimiento Fiscal (calculations.ts)
+    # Subtest: Calcula partida con cantidad fraccionaria: 1,5 x 3.333 con 10% de descuento
+    ok 1 - Calcula partida con cantidad fraccionaria: 1,5 x 3.333 con 10% de descuento
+      ---
+      duration_ms: 3.0588
+      type: 'test'
+      ...
+    # Subtest: Calcula 3 x 1.999 al 21%: subtotal 5.997, IVA 1.259, total 7.256
+    ok 2 - Calcula 3 x 1.999 al 21%: subtotal 5.997, IVA 1.259, total 7.256
+      ---
+      duration_ms: 0.3151
+      type: 'test'
+      ...
+    # Subtest: Demuestra la regla fiscal RD 1619/2012: IVA calculado por tipo sobre suma de bases
+    ok 3 - Demuestra la regla fiscal RD 1619/2012: IVA calculado por tipo sobre suma de bases
+      ---
+      duration_ms: 0.4151
+      type: 'test'
+      ...
+    # Subtest: Desglosa correctamente documento multitasa (10% y 21%)
+    ok 4 - Desglosa correctamente documento multitasa (10% y 21%)
+      ---
+      duration_ms: 1.0899
+      type: 'test'
+      ...
+    # Subtest: Calcula retención IRPF (15%) y Recargo de Equivalencia (5,2%)
+    ok 5 - Calcula retención IRPF (15%) y Recargo de Equivalencia (5,2%)
+      ---
+      duration_ms: 0.4247
+      type: 'test'
+      ...
+    # Subtest: Excluye partidas opcionales del total contractual e informa en optional_total_cents
+    ok 6 - Excluye partidas opcionales del total contractual e informa en optional_total_cents
+      ---
+      duration_ms: 0.369
+      type: 'test'
+      ...
+    # Subtest: Gestiona capítulos y agrupa sus subtotales en chapters
+    ok 7 - Gestiona capítulos y agrupa sus subtotales en chapters
+      ---
+      duration_ms: 0.2646
+      type: 'test'
+      ...
+    # Subtest: Soporta importes negativos para facturas rectificativas manteniendo coherencia
+    ok 8 - Soporta importes negativos para facturas rectificativas manteniendo coherencia
+      ---
+      duration_ms: 0.3624
+      type: 'test'
+      ...
+    # Subtest: Calcula margen comercial y porcentaje exacto
+    ok 9 - Calcula margen comercial y porcentaje exacto
+      ---
+      duration_ms: 0.371
+      type: 'test'
+      ...
+    # Subtest: Lanza CalculationError ante entradas inválidas o tasas no reglamentarias
+    ok 10 - Lanza CalculationError ante entradas inválidas o tasas no reglamentarias
+      ---
+      duration_ms: 1.0871
+      type: 'test'
+      ...
+    # Subtest: Propiedad matemática: para 1.000 documentos sintéticos, todos los totales son enteros seguros y cuadran
+    ok 11 - Propiedad matemática: para 1.000 documentos sintéticos, todos los totales son enteros seguros y cuadran
+      ---
+      duration_ms: 16.3338
+      type: 'test'
+      ...
+    # Subtest: factura rectificativa por diferencias recalculada línea a línea suma exactamente 0 contra la original
+    ok 12 - factura rectificativa por diferencias recalculada línea a línea suma exactamente 0 contra la original
+      ---
+      duration_ms: 0.5613
+      type: 'test'
+      ...
+    # Subtest: funciones auxiliares de cálculo de margen y subtotales operan con precisión entera
+    ok 13 - funciones auxiliares de cálculo de margen y subtotales operan con precisión entera
+      ---
+      duration_ms: 0.338
+      type: 'test'
+      ...
+    # Subtest: calcLineVat, calcLineIrpf y calcLineTotal validan rangos y calculan importes oficiales
+    ok 14 - calcLineVat, calcLineIrpf y calcLineTotal validan rangos y calculan importes oficiales
+      ---
+      duration_ms: 0.7162
+      type: 'test'
+      ...
+    1..14
+ok 2 - FASE 1: Motor de Cálculos Económicos y Cumplimiento Fiscal (calculations.ts)
+  ---
+  duration_ms: 30.3946
+  type: 'suite'
+  ...
+# Subtest: Cumplimiento Normativo y Registros Inalterables (compliance.ts)
+    # Subtest: vector oficial SHA-256: sha256Hex("abc") produce el hash reglamentario
+    ok 1 - vector oficial SHA-256: sha256Hex("abc") produce el hash reglamentario
+      ---
+      duration_ms: 26.137
+      type: 'test'
+      ...
+    # Subtest: vector no contrastado con documento oficial
+    ok 2 - vector no contrastado con documento oficial
+      ---
+      duration_ms: 3.37
+      type: 'test'
+      ...
+    # Subtest: registro de anulación: vector derivado, pendiente de contraste con el oficial
+    ok 3 - registro de anulación: vector derivado, pendiente de contraste con el oficial
+      ---
+      duration_ms: 1.4762
+      type: 'test'
+      ...
+    # Subtest: registro de eventos: vector derivado, pendiente de contraste con el oficial
+    ok 4 - registro de eventos: vector derivado, pendiente de contraste con el oficial
+      ---
+      duration_ms: 1.0992
+      type: 'test'
+      ...
+    # Subtest: canonicalize serializa objetos con claves ordenadas alfabéticamente sin espacios
+    ok 5 - canonicalize serializa objetos con claves ordenadas alfabéticamente sin espacios
+      ---
+      duration_ms: 0.4999
+      type: 'test'
+      ...
+    # Subtest: encadena 100 registros de facturación consecutivos y verifyBillingChain verifica su integridad
+    ok 6 - encadena 100 registros de facturación consecutivos y verifyBillingChain verifica su integridad
+      ---
+      duration_ms: 215.2764
+      type: 'test'
+      ...
+    # Subtest: formatea y genera URL de verificación QR (parámetros según especificación AEAT, no verificados)
+    ok 7 - formatea y genera URL de verificación QR (parámetros según especificación AEAT, no verificados)
+      ---
+      duration_ms: 23.1486
+      type: 'test'
+      ...
+    # Subtest: código QR: decodifica el payload (parámetros según especificación AEAT, no verificados)
+    ok 8 - código QR: decodifica el payload (parámetros según especificación AEAT, no verificados)
+      ---
+      duration_ms: 0.9302
+      type: 'test'
+      ...
+    # Subtest: buildCancellationRecord genera registro de anulación y mantiene encadenamiento criptográfico
+    ok 9 - buildCancellationRecord genera registro de anulación y mantiene encadenamiento criptográfico
+      ---
+      duration_ms: 3.0962
+      type: 'test'
+      ...
+    # Subtest: audit_events: encadena registros append-only y detecta manipulaciones
+    ok 10 - audit_events: encadena registros append-only y detecta manipulaciones
+      ---
+      duration_ms: 21.6343
+      type: 'test'
+      ...
+    # Subtest: assertVerifactuReady bloquea activación si falta certificado digital oficial
+    ok 11 - assertVerifactuReady bloquea activación si falta certificado digital oficial
+      ---
+      duration_ms: 1.1168
+      type: 'test'
+      ...
+    # Subtest: calcula retroceso exponencial determinista para reintentos de envío
+    ok 12 - calcula retroceso exponencial determinista para reintentos de envío
+      ---
+      duration_ms: 0.1962
+      type: 'test'
+      ...
+    # Subtest: cobertura de ramas: buildBillingRecord gestiona facturas rectificativas R1, fallbacks nulos y fechas directas
+    ok 13 - cobertura de ramas: buildBillingRecord gestiona facturas rectificativas R1, fallbacks nulos y fechas directas
+      ---
+      duration_ms: 2.3842
+      type: 'test'
+      ...
+    # Subtest: cobertura de ramas: verifyBillingChain detecta primer registro con huella no vacía y valida anulaciones
+    ok 14 - cobertura de ramas: verifyBillingChain detecta primer registro con huella no vacía y valida anulaciones
+      ---
+      duration_ms: 2.6505
+      type: 'test'
+      ...
+    # Subtest: evidencias de firma eIDAS (evidence.ts): generación completa y verificación de autenticidad
+    ok 15 - evidencias de firma eIDAS (evidence.ts): generación completa y verificación de autenticidad
+      ---
+      duration_ms: 2.4057
+      type: 'test'
+      ...
+    1..15
+ok 3 - Cumplimiento Normativo y Registros Inalterables (compliance.ts)
+  ---
+  duration_ms: 308.4357
+  type: 'suite'
+  ...
+# Subtest: Ciclo de Vida Documental (documents.ts)
+    # Subtest: creación de borrador exige cliente obligatorio y válido (falla si es inexistente)
+    ok 1 - creación de borrador exige cliente obligatorio y válido (falla si es inexistente)
+      ---
+      duration_ms: 6.5867
+      type: 'test'
+      ...
+    # Subtest: un borrador no tiene número; al emitir se valida y se asigna; si falla el contador no se altera
+    ok 2 - un borrador no tiene número; al emitir se valida y se asigna; si falla el contador no se altera
+      ---
+      duration_ms: 2.7933
+      type: 'test'
+      ...
+    # Subtest: concurrencia de contadores: 50 llamadas paralelas producen números 1..50 consecutivos sin huecos ni repetidos
+    ok 3 - concurrencia de contadores: 50 llamadas paralelas producen números 1..50 consecutivos sin huecos ni repetidos
+      ---
+      duration_ms: 1.5844
+      type: 'test'
+      ...
+    # Subtest: editar un documento no borrador falla; crear nueva versión incrementa version y permite cambios
+    ok 4 - editar un documento no borrador falla; crear nueva versión incrementa version y permite cambios
+      ---
+      duration_ms: 1.2281
+      type: 'test'
+      ...
+    # Subtest: conversión: Presupuesto aceptado a Factura clona líneas y asigna converted_from
+    ok 5 - conversión: Presupuesto aceptado a Factura clona líneas y asigna converted_from
+      ---
+      duration_ms: 1.4853
+      type: 'test'
+      ...
+    # Subtest: conversión: Presupuesto aceptado a Albarán de entrega clona partidas y asigna converted_from
+    ok 6 - conversión: Presupuesto aceptado a Albarán de entrega clona partidas y asigna converted_from
+      ---
+      duration_ms: 0.6667
+      type: 'test'
+      ...
+    # Subtest: conversión: Presupuesto aceptado a Factura Proforma clona partidas y preserva importes
+    ok 7 - conversión: Presupuesto aceptado a Factura Proforma clona partidas y preserva importes
+      ---
+      duration_ms: 0.5189
+      type: 'test'
+      ...
+    # Subtest: factura rectificativa: por diferencias anula exactamente la factura original (suma neta = 0)
+    ok 8 - factura rectificativa: por diferencias anula exactamente la factura original (suma neta = 0)
+      ---
+      duration_ms: 1.2922
+      type: 'test'
+      ...
+    # Subtest: presupuesto con valid_until vencido pasa a expired al chequear caducidad
+    ok 9 - presupuesto con valid_until vencido pasa a expired al chequear caducidad
+      ---
+      duration_ms: 1.8914
+      type: 'test'
+      ...
+    # Subtest: emisión de factura falla si el cliente o la empresa carecen de NIF o domicilio fiscal
+    ok 10 - emisión de factura falla si el cliente o la empresa carecen de NIF o domicilio fiscal
+      ---
+      duration_ms: 1.0542
+      type: 'test'
+      ...
+    # Subtest: conversión falla si el documento origen no está en estado accepted
+    ok 11 - conversión falla si el documento origen no está en estado accepted
+      ---
+      duration_ms: 0.4413
+      type: 'test'
+      ...
+    # Subtest: rectificativa por sustitución anula la original a void
+    ok 12 - rectificativa por sustitución anula la original a void
+      ---
+      duration_ms: 0.3751
+      type: 'test'
+      ...
+    # Subtest: facturación parcial 40% + 60% cierra el origen en invoiced; un 3er intento falla por exceder el total
+    ok 13 - facturación parcial 40% + 60% cierra el origen en invoiced; un 3er intento falla por exceder el total
+      ---
+      duration_ms: 0.5429
+      type: 'test'
+      ...
+    # Subtest: formatFullDocumentNumber, validateSeriesPrefix y InMemoryCounterManager gestionan series y numeración oficial
+    ok 14 - formatFullDocumentNumber, validateSeriesPrefix y InMemoryCounterManager gestionan series y numeración oficial
+      ---
+      duration_ms: 0.5229
+      type: 'test'
+      ...
+    # Subtest: cobertura de ramas: createDraftDocument gestiona títulos vacíos, términos por defecto y cliente discordante
+    ok 15 - cobertura de ramas: createDraftDocument gestiona títulos vacíos, términos por defecto y cliente discordante
+      ---
+      duration_ms: 0.2985
+      type: 'test'
+      ...
+    # Subtest: cobertura de ramas: validaciones fiscales completas de emisor, receptor e importes en validateAndIssueDocument
+    ok 16 - cobertura de ramas: validaciones fiscales completas de emisor, receptor e importes en validateAndIssueDocument
+      ---
+      duration_ms: 0.7782
+      type: 'test'
+      ...
+    # Subtest: cobertura de ramas: createNewDocumentVersion falla si el documento es borrador
+    ok 17 - cobertura de ramas: createNewDocumentVersion falla si el documento es borrador
+      ---
+      duration_ms: 0.2489
+      type: 'test'
+      ...
+    # Subtest: cobertura de ramas: convertDocument soporta destinos no-factura y valida transiciones permitidas
+    ok 18 - cobertura de ramas: convertDocument soporta destinos no-factura y valida transiciones permitidas
+      ---
+      duration_ms: 0.5264
+      type: 'test'
+      ...
+    # Subtest: cobertura de ramas: createCreditNoteDocument valida estado original, longitud de motivo y método de sustitución
+    ok 19 - cobertura de ramas: createCreditNoteDocument valida estado original, longitud de motivo y método de sustitución
+      ---
+      duration_ms: 0.5054
+      type: 'test'
+      ...
+    # Subtest: cobertura de ramas: checkDocumentExpiry evalúa tipos no-quote, estados no-vencibles y fechas futuras
+    ok 20 - cobertura de ramas: checkDocumentExpiry evalúa tipos no-quote, estados no-vencibles y fechas futuras
+      ---
+      duration_ms: 0.2989
+      type: 'test'
+      ...
+    1..20
+ok 4 - Ciclo de Vida Documental (documents.ts)
+  ---
+  duration_ms: 45.0284
+  type: 'suite'
+  ...
+# Subtest: Gestión de Miembros y Roles (members.ts)
+    # Subtest: permite eliminar a un empleado sin restricciones de rol mínimo
+    ok 1 - permite eliminar a un empleado sin restricciones de rol mínimo
+      ---
+      duration_ms: 8.934
+      type: 'test'
+      ...
+    # Subtest: permite eliminar a un propietario si queda otro propietario activo
+    ok 2 - permite eliminar a un propietario si queda otro propietario activo
+      ---
+      duration_ms: 0.3543
+      type: 'test'
+      ...
+    # Subtest: bloquea la eliminación del único propietario activo
+    ok 3 - bloquea la eliminación del único propietario activo
+      ---
+      duration_ms: 0.6914
+      type: 'test'
+      ...
+    # Subtest: permite cambiar el rol de un empleado a propietario
+    ok 4 - permite cambiar el rol de un empleado a propietario
+      ---
+      duration_ms: 0.7122
+      type: 'test'
+      ...
+    # Subtest: permite degradar un propietario a empleado si queda otro propietario
+    ok 5 - permite degradar un propietario a empleado si queda otro propietario
+      ---
+      duration_ms: 0.2419
+      type: 'test'
+      ...
+    # Subtest: bloquea la degradación del único propietario activo
+    ok 6 - bloquea la degradación del único propietario activo
+      ---
+      duration_ms: 0.2461
+      type: 'test'
+      ...
+    # Subtest: valida formatos de correo y roles en invitaciones
+    ok 7 - valida formatos de correo y roles en invitaciones
+      ---
+      duration_ms: 0.2926
+      type: 'test'
+      ...
+    1..7
+ok 5 - Gestión de Miembros y Roles (members.ts)
+  ---
+  duration_ms: 18.8158
+  type: 'suite'
+  ...
+# Subtest: FASE 1: Módulo de Aritmética Monetaria Entera (money.ts)
+    # Subtest: Redondeo aritmético half-up determinista para números positivos y negativos
+    ok 1 - Redondeo aritmético half-up determinista para números positivos y negativos
+      ---
+      duration_ms: 14.2362
+      type: 'test'
+      ...
+    # Subtest: formatCents formatea según norma española con aritmética entera estricta
+    ok 2 - formatCents formatea según norma española con aritmética entera estricta
+      ---
+      duration_ms: 0.5778
+      type: 'test'
+      ...
+    # Subtest: formatCents lanza RangeError con enteros no seguros o flotantes
+    ok 3 - formatCents lanza RangeError con enteros no seguros o flotantes
+      ---
+      duration_ms: 1.4403
+      type: 'test'
+      ...
+    # Subtest: eurosToCents convierte cadenas y números a céntimos enteros con precisión
+    ok 4 - eurosToCents convierte cadenas y números a céntimos enteros con precisión
+      ---
+      duration_ms: 0.709
+      type: 'test'
+      ...
+    # Subtest: eurosToCents rechaza formatos ambiguos o no numéricos
+    ok 5 - eurosToCents rechaza formatos ambiguos o no numéricos
+      ---
+      duration_ms: 0.3327
+      type: 'test'
+      ...
+    # Subtest: centsToEuros realiza conversión bidireccional exacta
+    ok 6 - centsToEuros realiza conversión bidireccional exacta
+      ---
+      duration_ms: 0.2068
+      type: 'test'
+      ...
+    # Subtest: formatPercent formatea porcentajes con coma decimal
+    ok 7 - formatPercent formatea porcentajes con coma decimal
+      ---
+      duration_ms: 0.2843
+      type: 'test'
+      ...
+    # Subtest: formatDocNumber garantiza mínimo 4 dígitos sin truncar números grandes
+    ok 8 - formatDocNumber garantiza mínimo 4 dígitos sin truncar números grandes
+      ---
+      duration_ms: 1.5973
+      type: 'test'
+      ...
+    # Subtest: assertRate y eurosToCents cubren exhaustivamente validaciones de rango y formatos con miles
+    ok 9 - assertRate y eurosToCents cubren exhaustivamente validaciones de rango y formatos con miles
+      ---
+      duration_ms: 1.0185
+      type: 'test'
+      ...
+    1..9
+ok 6 - FASE 1: Módulo de Aritmética Monetaria Entera (money.ts)
+  ---
+  duration_ms: 24.5708
+  type: 'suite'
+  ...
+# Subtest: Fase 11: Alta de Empresa, Ajustes, Importación y Portabilidad
+    # Subtest: un usuario recién registrado parte de estado totalmente vacío y KPIs en cero sin NaN
+    ok 1 - un usuario recién registrado parte de estado totalmente vacío y KPIs en cero sin NaN
+      ---
+      duration_ms: 1.6086
+      type: 'test'
+      ...
+    # Subtest: validación de datos fiscales del emisor requeridos para emitir facturas (RD 1619/2012)
+    ok 2 - validación de datos fiscales del emisor requeridos para emitir facturas (RD 1619/2012)
+      ---
+      duration_ms: 0.7651
+      type: 'test'
+      ...
+    # Subtest: importación CSV de clientes: procesa 3 válidas y reporta con precisión 2 inválidas
+    ok 3 - importación CSV de clientes: procesa 3 válidas y reporta con precisión 2 inválidas
+      ---
+      duration_ms: 0.6708
+      type: 'test'
+      ...
+    # Subtest: el catálogo alimenta la inserción rápida copiando precio, coste e IVA al documento
+    ok 4 - el catálogo alimenta la inserción rápida copiando precio, coste e IVA al documento
+      ---
+      duration_ms: 2.1043
+      type: 'test'
+      ...
+    # Subtest: exportación completa de organización genera estructura JSON exhaustiva y auditable
+    ok 5 - exportación completa de organización genera estructura JSON exhaustiva y auditable
+      ---
+      duration_ms: 1.7666
+      type: 'test'
+      ...
+    1..5
+ok 7 - Fase 11: Alta de Empresa, Ajustes, Importación y Portabilidad
+  ---
+  duration_ms: 10.4003
+  type: 'suite'
+  ...
+# Subtest: Tesorería, Hitos y Cobros (payments.ts)
+    # Subtest: método del resto: 3 hitos de 33.33%, 33.33% y 33.34% sobre 100,00 € suman exactamente 10.000 céntimos
+    ok 1 - método del resto: 3 hitos de 33.33%, 33.33% y 33.34% sobre 100,00 € suman exactamente 10.000 céntimos
+      ---
+      duration_ms: 5.7495
+      type: 'test'
+      ...
+    # Subtest: propiedad matemática: en 1.000 combinaciones pseudoaleatorias con semilla determinista la suma de hitos coincide al céntimo
+    ok 2 - propiedad matemática: en 1.000 combinaciones pseudoaleatorias con semilla determinista la suma de hitos coincide al céntimo
+      ---
+      duration_ms: 49.6393
+      type: 'test'
+      ...
+    # Subtest: cobro parcial transita factura a partially_paid y liquidación final a paid
+    ok 3 - cobro parcial transita factura a partially_paid y liquidación final a paid
+      ---
+      duration_ms: 0.9399
+      type: 'test'
+      ...
+    # Subtest: sobrecobro por encima del pendiente es rechazado de forma estricta
+    ok 4 - sobrecobro por encima del pendiente es rechazado de forma estricta
+      ---
+      duration_ms: 0.7811
+      type: 'test'
+      ...
+    # Subtest: exportación de facturas a CSV: codifica UTF-8 con BOM, separador punto y coma y escapa saltos y comillas
+    ok 5 - exportación de facturas a CSV: codifica UTF-8 con BOM, separador punto y coma y escapa saltos y comillas
+      ---
+      duration_ms: 0.5295
+      type: 'test'
+      ...
+    # Subtest: cobertura de ramas: buildMilestones valida importes positivos, specs no vacíos, suma 100% e importes fijos
+    ok 6 - cobertura de ramas: buildMilestones valida importes positivos, specs no vacíos, suma 100% e importes fijos
+      ---
+      duration_ms: 0.5061
+      type: 'test'
+      ...
+    # Subtest: cobertura de ramas: registerPayment valida hito inexistente, hito ya cobrado, cobro parcial y sobrecobro
+    ok 7 - cobertura de ramas: registerPayment valida hito inexistente, hito ya cobrado, cobro parcial y sobrecobro
+      ---
+      duration_ms: 0.8715
+      type: 'test'
+      ...
+    # Subtest: cobertura de ramas: exportInvoicesToCsv maneja borradores sin serie e importes negativos rectificativos
+    ok 8 - cobertura de ramas: exportInvoicesToCsv maneja borradores sin serie e importes negativos rectificativos
+      ---
+      duration_ms: 0.5326
+      type: 'test'
+      ...
+    1..8
+ok 8 - Tesorería, Hitos y Cobros (payments.ts)
+  ---
+  duration_ms: 61.8906
+  type: 'suite'
+  ...
+# Subtest: Generación de PDF Oficial A4 (pdf.ts)
+    # Subtest: genera un búfer PDF binario válido con cabecera %PDF-
+    ok 1 - genera un búfer PDF binario válido con cabecera %PDF-
+      ---
+      duration_ms: 146.7229
+      type: 'test'
+      ...
+    # Subtest: soporta documentos con partidas extensas sin errores de renderizado
+    ok 2 - soporta documentos con partidas extensas sin errores de renderizado
+      ---
+      duration_ms: 109.507
+      type: 'test'
+      ...
+    # Subtest: mismo contenido textual al generarlo dos veces; pdf_hash coincide con el almacenado en el documento
+    ok 3 - mismo contenido textual al generarlo dos veces; pdf_hash coincide con el almacenado en el documento
+      ---
+      duration_ms: 68.841
+      type: 'test'
+      ...
+    # Subtest: el PDF de una factura emitida contiene bloque de datos fiscales y huella digital completa del billing_record
+    ok 4 - el PDF de una factura emitida contiene bloque de datos fiscales y huella digital completa del billing_record
+      ---
+      duration_ms: 35.8446
+      type: 'test'
+      ...
+    # Subtest: el PDF de una factura contiene código QR decodificable (parámetros según especificación AEAT, no verificados)
+    ok 5 - el PDF de una factura contiene código QR decodificable (parámetros según especificación AEAT, no verificados)
+      ---
+      duration_ms: 62.9084
+      type: 'test'
+      ...
+    # Subtest: soporta 120 líneas con paginación correcta sin errores de desbordamiento
+    ok 6 - soporta 120 líneas con paginación correcta sin errores de desbordamiento
+      ---
+      duration_ms: 352.3416
+      type: 'test'
+      ...
+    # Subtest: ramas de plantilla PDF: tipos proforma, rectificativa, albarán, retención IRPF y campos opcionales
+    ok 7 - ramas de plantilla PDF: tipos proforma, rectificativa, albarán, retención IRPF y campos opcionales
+      ---
+      duration_ms: 124.4719
+      type: 'test'
+      ...
+    1..7
+ok 9 - Generación de PDF Oficial A4 (pdf.ts)
+  ---
+  duration_ms: 902.1498
+  type: 'suite'
+  ...
+# Subtest: Matriz de Permisos RBAC (permissions.ts)
+    # Subtest: el rol "owner" debe tener acceso a todas y cada una de las acciones del sistema
+    ok 1 - el rol "owner" debe tener acceso a todas y cada una de las acciones del sistema
+      ---
+      duration_ms: 1.3776
+      type: 'test'
+      ...
+    # Subtest: el rol "employee" solo tiene acceso a acciones operativas permitidas
+    ok 2 - el rol "employee" solo tiene acceso a acciones operativas permitidas
+      ---
+      duration_ms: 0.7963
+      type: 'test'
+      ...
+    # Subtest: un rol anónimo o nulo no tiene ningún permiso y lanza AuthorizationError
+    ok 3 - un rol anónimo o nulo no tiene ningún permiso y lanza AuthorizationError
+      ---
+      duration_ms: 0.6611
+      type: 'test'
+      ...
+    1..3
+ok 10 - Matriz de Permisos RBAC (permissions.ts)
+  ---
+  duration_ms: 4.5199
+  type: 'suite'
+  ...
+# Subtest: Límites y Planes SaaS (plans.ts)
+    # Subtest: Plan Free: valida el límite exacto de documentos al mes (máx 5)
+    ok 1 - Plan Free: valida el límite exacto de documentos al mes (máx 5)
+      ---
+      duration_ms: 2.902
+      type: 'test'
+      ...
+    # Subtest: Plan Free: valida límite exacto de usuarios (máx 1)
+    ok 2 - Plan Free: valida límite exacto de usuarios (máx 1)
+      ---
+      duration_ms: 0.535
+      type: 'test'
+      ...
+    # Subtest: Plan Free: bloquea módulos Pro (firma, tesorería, gastos)
+    ok 3 - Plan Free: bloquea módulos Pro (firma, tesorería, gastos)
+      ---
+      duration_ms: 0.355
+      type: 'test'
+      ...
+    # Subtest: Plan Pro: permite hasta 100 documentos, 5 usuarios y módulos Pro
+    ok 4 - Plan Pro: permite hasta 100 documentos, 5 usuarios y módulos Pro
+      ---
+      duration_ms: 1.0868
+      type: 'test'
+      ...
+    # Subtest: Plan Business: documentos ilimitados y hasta 25 usuarios
+    ok 5 - Plan Business: documentos ilimitados y hasta 25 usuarios
+      ---
+      duration_ms: 4.7839
+      type: 'test'
+      ...
+    # Subtest: Licencia caducada o inactiva revierte a Plan Gratuito
+    ok 6 - Licencia caducada o inactiva revierte a Plan Gratuito
+      ---
+      duration_ms: 1.6735
+      type: 'test'
+      ...
+    1..6
+ok 11 - Límites y Planes SaaS (plans.ts)
+  ---
+  duration_ms: 15.0413
+  type: 'suite'
+  ...
+# Subtest: Contrato de Persistencia Multiempresa: MemoryRepository
+    # Subtest: arranca completamente vacío sin datos iniciales preconfigurados
+    ok 1 - arranca completamente vacío sin datos iniciales preconfigurados
+      ---
+      duration_ms: 3.4839
+      type: 'test'
+      ...
+    # Subtest: garantiza aislamiento estricto por Organización (Tenant Isolation)
+    ok 2 - garantiza aislamiento estricto por Organización (Tenant Isolation)
+      ---
+      duration_ms: 2.6341
+      type: 'test'
+      ...
+    # Subtest: ciclo CRUD completo de clientes con borrado seguro
+    ok 3 - ciclo CRUD completo de clientes con borrado seguro
+      ---
+      duration_ms: 0.6947
+      type: 'test'
+      ...
+    # Subtest: ciclo CRUD completo de catálogo de partidas
+    ok 4 - ciclo CRUD completo de catálogo de partidas
+      ---
+      duration_ms: 0.6242
+      type: 'test'
+      ...
+    # Subtest: filtrado de documentos por doc_type y status
+    ok 5 - filtrado de documentos por doc_type y status
+      ---
+      duration_ms: 1.0393
+      type: 'test'
+      ...
+    # Subtest: impide el borrado de documentos con número oficial asignado
+    ok 6 - impide el borrado de documentos con número oficial asignado
+      ---
+      duration_ms: 1.2322
+      type: 'test'
+      ...
+    # Subtest: registro y consulta de cobros y eventos de auditoría
+    ok 7 - registro y consulta de cobros y eventos de auditoría
+      ---
+      duration_ms: 0.5173
+      type: 'test'
+      ...
+    # Subtest: búsqueda de texto, filtrado por cliente y paginación en getDocuments
+    ok 8 - búsqueda de texto, filtrado por cliente y paginación en getDocuments
+      ---
+      duration_ms: 0.8191
+      type: 'test'
+      ...
+    # Subtest: casos de error y borrado de elementos inexistentes en todos los métodos
+    ok 9 - casos de error y borrado de elementos inexistentes en todos los métodos
+      ---
+      duration_ms: 0.5502
+      type: 'test'
+      ...
+    # Subtest: gestión de miembros, organizaciones, ajustes y licencias
+    ok 10 - gestión de miembros, organizaciones, ajustes y licencias
+      ---
+      duration_ms: 1.9582
+      type: 'test'
+      ...
+    1..10
+ok 12 - Contrato de Persistencia Multiempresa: MemoryRepository
+  ---
+  duration_ms: 16.368
+  type: 'suite'
+  ...
+# Subtest: Contrato de Persistencia Multiempresa: LocalStorageRepository
+    # Subtest: arranca completamente vacío sin datos iniciales preconfigurados
+    ok 1 - arranca completamente vacío sin datos iniciales preconfigurados
+      ---
+      duration_ms: 1.3923
+      type: 'test'
+      ...
+    # Subtest: garantiza aislamiento estricto por Organización (Tenant Isolation)
+    ok 2 - garantiza aislamiento estricto por Organización (Tenant Isolation)
+      ---
+      duration_ms: 0.6047
+      type: 'test'
+      ...
+    # Subtest: ciclo CRUD completo de clientes con borrado seguro
+    ok 3 - ciclo CRUD completo de clientes con borrado seguro
+      ---
+      duration_ms: 0.8368
+      type: 'test'
+      ...
+    # Subtest: ciclo CRUD completo de catálogo de partidas
+    ok 4 - ciclo CRUD completo de catálogo de partidas
+      ---
+      duration_ms: 0.4564
+      type: 'test'
+      ...
+    # Subtest: filtrado de documentos por doc_type y status
+    ok 5 - filtrado de documentos por doc_type y status
+      ---
+      duration_ms: 4.2301
+      type: 'test'
+      ...
+    # Subtest: impide el borrado de documentos con número oficial asignado
+    ok 6 - impide el borrado de documentos con número oficial asignado
+      ---
+      duration_ms: 0.5783
+      type: 'test'
+      ...
+    # Subtest: registro y consulta de cobros y eventos de auditoría
+    ok 7 - registro y consulta de cobros y eventos de auditoría
+      ---
+      duration_ms: 0.6255
+      type: 'test'
+      ...
+    # Subtest: búsqueda de texto, filtrado por cliente y paginación en getDocuments
+    ok 8 - búsqueda de texto, filtrado por cliente y paginación en getDocuments
+      ---
+      duration_ms: 1.2424
+      type: 'test'
+      ...
+    # Subtest: casos de error y borrado de elementos inexistentes en todos los métodos
+    ok 9 - casos de error y borrado de elementos inexistentes en todos los métodos
+      ---
+      duration_ms: 0.3405
+      type: 'test'
+      ...
+    # Subtest: gestión de miembros, organizaciones, ajustes y licencias
+    ok 10 - gestión de miembros, organizaciones, ajustes y licencias
+      ---
+      duration_ms: 1.0331
+      type: 'test'
+      ...
+    1..10
+ok 13 - Contrato de Persistencia Multiempresa: LocalStorageRepository
+  ---
+  duration_ms: 12.2552
+  type: 'suite'
+  ...
+# Subtest: Mecanismos de Fallback de Almacenamiento Local (local.ts)
+    # Subtest: safeGetStorage devuelve el valor de reserva ante JSON corrupto o entorno SSR
+    ok 1 - safeGetStorage devuelve el valor de reserva ante JSON corrupto o entorno SSR
+      ---
+      duration_ms: 0.7078
+      type: 'test'
+      ...
+    # Subtest: safeSetStorage maneja excepciones de cuota en almacenamiento del navegador sin propagar caída
+    ok 2 - safeSetStorage maneja excepciones de cuota en almacenamiento del navegador sin propagar caída
+      ---
+      duration_ms: 0.339
+      type: 'test'
+      ...
+    1..2
+ok 14 - Mecanismos de Fallback de Almacenamiento Local (local.ts)
+  ---
+  duration_ms: 1.2194
+  type: 'suite'
+  ...
+# Subtest: Firma Electrónica eIDAS y Paquete de Evidencias (signing.ts)
+    # Subtest: generatePublicToken genera token de alta entropía (256 bits) y su hash no coincide con el token en claro
+    ok 1 - generatePublicToken genera token de alta entropía (256 bits) y su hash no coincide con el token en claro
+      ---
+      duration_ms: 39.1321
+      type: 'test'
+      ...
+    # Subtest: firma sobre documento en borrador (draft) es rechazada
+    ok 2 - firma sobre documento en borrador (draft) es rechazada
+      ---
+      duration_ms: 0.9358
+      type: 'test'
+      ...
+    # Subtest: segunda firma sobre documento ya aceptado es rechazada
+    ok 3 - segunda firma sobre documento ya aceptado es rechazada
+      ---
+      duration_ms: 0.3527
+      type: 'test'
+      ...
+    # Subtest: documento rechazado o caducado es bloqueado para firma
+    ok 4 - documento rechazado o caducado es bloqueado para firma
+      ---
+      duration_ms: 0.2855
+      type: 'test'
+      ...
+    # Subtest: documento en estado sent o viewed admite firma formal
+    ok 5 - documento en estado sent o viewed admite firma formal
+      ---
+      duration_ms: 0.313
+      type: 'test'
+      ...
+    # Subtest: validación del firmante exige nombre y algoritmo oficial de NIF/CIF válido
+    ok 6 - validación del firmante exige nombre y algoritmo oficial de NIF/CIF válido
+      ---
+      duration_ms: 0.8364
+      type: 'test'
+      ...
+    # Subtest: OTP: 5 intentos fallidos bloquean la sesión de forma irreversible
+    ok 7 - OTP: 5 intentos fallidos bloquean la sesión de forma irreversible
+      ---
+      duration_ms: 0.58
+      type: 'test'
+      ...
+    # Subtest: OTP caducado es rechazado
+    ok 8 - OTP caducado es rechazado
+      ---
+      duration_ms: 0.3615
+      type: 'test'
+      ...
+    # Subtest: paquete de evidencias eIDAS: cualquier alteración posterior del PDF o datos invalida la verificación
+    ok 9 - paquete de evidencias eIDAS: cualquier alteración posterior del PDF o datos invalida la verificación
+      ---
+      duration_ms: 7.85
+      type: 'test'
+      ...
+    # Subtest: signed_at procede del servidor e ignora cualquier timestamp manipulado enviado por el cliente
+    ok 10 - signed_at procede del servidor e ignora cualquier timestamp manipulado enviado por el cliente
+      ---
+      duration_ms: 11.3033
+      type: 'test'
+      ...
+    # Subtest: viewed se registra una sola vez por sesión y el ciclo documental previene retroceso o duplicidad
+    ok 11 - viewed se registra una sola vez por sesión y el ciclo documental previene retroceso o duplicidad
+      ---
+      duration_ms: 0.4796
+      type: 'test'
+      ...
+    # Subtest: assertEmailServiceConfigured bloquea sin simulación cuando falta RESEND_API_KEY
+    ok 12 - assertEmailServiceConfigured bloquea sin simulación cuando falta RESEND_API_KEY
+      ---
+      duration_ms: 0.3424
+      type: 'test'
+      ...
+    1..12
+ok 15 - Firma Electrónica eIDAS y Paquete de Evidencias (signing.ts)
+  ---
+  duration_ms: 66.6991
+  type: 'suite'
+  ...
+# Subtest: Máquina de Estados Documental (state-machine.ts)
+    # Subtest: transición a sí misma es rechazada si no está explícitamente definida en la matriz
+    ok 1 - transición a sí misma es rechazada si no está explícitamente definida en la matriz
+      ---
+      duration_ms: 5.6638
+      type: 'test'
+      ...
+    # Subtest: Presupuesto: permite únicamente las transiciones de su ciclo de vida
+    ok 2 - Presupuesto: permite únicamente las transiciones de su ciclo de vida
+      ---
+      duration_ms: 0.6685
+      type: 'test'
+      ...
+    # Subtest: Factura: transiciones válidas y prohibición de retroceso a borrador
+    ok 3 - Factura: transiciones válidas y prohibición de retroceso a borrador
+      ---
+      duration_ms: 0.591
+      type: 'test'
+      ...
+    # Subtest: Factura rectificativa: sigue el mismo ciclo inmutable que la factura
+    ok 4 - Factura rectificativa: sigue el mismo ciclo inmutable que la factura
+      ---
+      duration_ms: 0.3276
+      type: 'test'
+      ...
+    # Subtest: tabla exhaustiva de transiciones generada: toda transición permitida pasa y toda transición no permitida lanza InvalidTransitionError
+    ok 5 - tabla exhaustiva de transiciones generada: toda transición permitida pasa y toda transición no permitida lanza InvalidTransitionError
+      ---
+      duration_ms: 5.286
+      type: 'test'
+      ...
+    # Subtest: cobertura de ramas: canTransition gestiona tipos no reconocidos y InvalidTransitionError expone metadatos y fallbacks
+    ok 6 - cobertura de ramas: canTransition gestiona tipos no reconocidos y InvalidTransitionError expone metadatos y fallbacks
+      ---
+      duration_ms: 0.5076
+      type: 'test'
+      ...
+    1..6
+ok 16 - Máquina de Estados Documental (state-machine.ts)
+  ---
+  duration_ms: 17.558
+  type: 'suite'
+  ...
+# Subtest: Webhooks de Stripe: Idempotencia y Actualización de Licencias
+    # Subtest: procesa checkout.session.completed y activa la licencia pro
+    ok 1 - procesa checkout.session.completed y activa la licencia pro
+      ---
+      duration_ms: 5.1353
+      type: 'test'
+      ...
+    # Subtest: garantiza idempotencia: el mismo event.id dos veces solo tiene un efecto y la segunda se marca como duplicado
+    ok 2 - garantiza idempotencia: el mismo event.id dos veces solo tiene un efecto y la segunda se marca como duplicado
+      ---
+      duration_ms: 0.7356
+      type: 'test'
+      ...
+    # Subtest: procesa customer.subscription.deleted y revierte la licencia a inactiva y plan free
+    ok 3 - procesa customer.subscription.deleted y revierte la licencia a inactiva y plan free
+      ---
+      duration_ms: 0.8528
+      type: 'test'
+      ...
+    # Subtest: procesa invoice.payment_failed y desactiva la suscripción
+    ok 4 - procesa invoice.payment_failed y desactiva la suscripción
+      ---
+      duration_ms: 0.7971
+      type: 'test'
+      ...
+    # Subtest: checkout.session.completed sin org_id devuelve fallo controlado con reason missing_org_id_in_session
+    ok 5 - checkout.session.completed sin org_id devuelve fallo controlado con reason missing_org_id_in_session
+      ---
+      duration_ms: 17.2459
+      type: 'test'
+      ...
+    # Subtest: procesa customer.subscription.updated actualizando estado y fecha de vigencia
+    ok 6 - procesa customer.subscription.updated actualizando estado y fecha de vigencia
+      ---
+      duration_ms: 0.6372
+      type: 'test'
+      ...
+    # Subtest: procesa invoice.payment_failed con subscription como objeto o nula sin fallar
+    ok 7 - procesa invoice.payment_failed con subscription como objeto o nula sin fallar
+      ---
+      duration_ms: 1.2845
+      type: 'test'
+      ...
+    # Subtest: eventos no manejados ejecutan la rama default y se registran sin error
+    ok 8 - eventos no manejados ejecutan la rama default y se registran sin error
+      ---
+      duration_ms: 0.3758
+      type: 'test'
+      ...
+    # Subtest: valida firma de webhook exitosa y de firma inválida rechazada
+    ok 9 - valida firma de webhook exitosa y de firma inválida rechazada
+      ---
+      duration_ms: 0.9657
+      type: 'test'
+      ...
+    1..9
+ok 17 - Webhooks de Stripe: Idempotencia y Actualización de Licencias
+  ---
+  duration_ms: 30.9308
+  type: 'suite'
+  ...
+# Subtest: FASE 2: Validadores Oficiales de Dominio (validators)
+    # Subtest: Identificación Fiscal Española (NIF / NIE / CIF)
+        # Subtest: Valida correctamente DNIs válidos con letra de control
+        ok 1 - Valida correctamente DNIs válidos con letra de control
+          ---
+          duration_ms: 1.0294
+          type: 'test'
+          ...
+        # Subtest: Rechaza DNIs con letra de control errónea o longitud incorrecta
+        ok 2 - Rechaza DNIs con letra de control errónea o longitud incorrecta
+          ---
+          duration_ms: 0.4779
+          type: 'test'
+          ...
+        # Subtest: Valida correctamente NIEs de residentes comunitarios y extranjeros
+        ok 3 - Valida correctamente NIEs de residentes comunitarios y extranjeros
+          ---
+          duration_ms: 0.2561
+          type: 'test'
+          ...
+        # Subtest: Valida CIFs de personas jurídicas (Sociedades A, B y Entidades)
+        ok 4 - Valida CIFs de personas jurídicas (Sociedades A, B y Entidades)
+          ---
+          duration_ms: 0.5072
+          type: 'test'
+          ...
+        1..4
+    ok 1 - Identificación Fiscal Española (NIF / NIE / CIF)
+      ---
+      duration_ms: 3.7379
+      type: 'suite'
+      ...
+    # Subtest: Validador de Cuentas Bancarias (IBAN ISO 13616)
+        # Subtest: Valida códigos IBAN reales españoles con algoritmo MOD-97
+        ok 1 - Valida códigos IBAN reales españoles con algoritmo MOD-97
+          ---
+          duration_ms: 0.5113
+          type: 'test'
+          ...
+        # Subtest: Rechaza IBANs alterados o con longitud inválida
+        ok 2 - Rechaza IBANs alterados o con longitud inválida
+          ---
+          duration_ms: 0.3622
+          type: 'test'
+          ...
+        1..2
+    ok 2 - Validador de Cuentas Bancarias (IBAN ISO 13616)
+      ---
+      duration_ms: 1.191
+      type: 'suite'
+      ...
+    # Subtest: Esquemas Zod de Cumplimiento Contractual
+        # Subtest: Rechaza partidas con tipos de IVA no admitidos (ej. 7%)
+        ok 1 - Rechaza partidas con tipos de IVA no admitidos (ej. 7%)
+          ---
+          duration_ms: 5.6624
+          type: 'test'
+          ...
+        # Subtest: Rechaza descuentos superiores al 100%
+        ok 2 - Rechaza descuentos superiores al 100%
+          ---
+          duration_ms: 0.4932
+          type: 'test'
+          ...
+        # Subtest: Rechaza cantidades con más de 3 decimales
+        ok 3 - Rechaza cantidades con más de 3 decimales
+          ---
+          duration_ms: 0.6558
+          type: 'test'
+          ...
+        # Subtest: Valida clientes con datos fiscales completos requeridos por RD 1619/2012
+        ok 4 - Valida clientes con datos fiscales completos requeridos por RD 1619/2012
+          ---
+          duration_ms: 1.9729
+          type: 'test'
+          ...
+        1..4
+    ok 3 - Esquemas Zod de Cumplimiento Contractual
+      ---
+      duration_ms: 9.1958
+      type: 'suite'
+      ...
+    1..3
+ok 18 - FASE 2: Validadores Oficiales de Dominio (validators)
+  ---
+  duration_ms: 15.0452
+  type: 'suite'
+  ...
+# Subtest: FASE 10: Derivación y Adaptabilidad Accesible de Acentos (accent.test.ts)
+    # Subtest: Los 5 acentos oficiales generan tokens válidos con contraste accesible en claro y oscuro
+    ok 1 - Los 5 acentos oficiales generan tokens válidos con contraste accesible en claro y oscuro
+      ---
+      duration_ms: 3.1359
+      type: 'test'
+      ...
+    # Subtest: Color personalizado muy claro (\#FFE066) se oscurece para botón hasta cumplir >= 4.5:1 sin cambiar matiz > 5°
+    ok 2 - Color personalizado muy claro (\#FFE066) se oscurece para botón hasta cumplir >= 4.5:1 sin cambiar matiz > 5°
+      ---
+      duration_ms: 1.8645
+      type: 'test'
+      ...
+    # Subtest: Hexadecimal inválido lanza un error controlado
+    ok 3 - Hexadecimal inválido lanza un error controlado
+      ---
+      duration_ms: 0.7798
+      type: 'test'
+      ...
+    1..3
+ok 19 - FASE 10: Derivación y Adaptabilidad Accesible de Acentos (accent.test.ts)
+  ---
+  duration_ms: 7.8775
+  type: 'test'
+  ...
+# Subtest: Proceso Cron de Caducidad de Presupuestos (cron-expire.ts)
+    # Subtest: sin CRON_SECRET definido o vacío debe fallar cerrado devolviendo unauthorized: true
+    ok 1 - sin CRON_SECRET definido o vacío debe fallar cerrado devolviendo unauthorized: true
+      ---
+      duration_ms: 3.5214
+      type: 'test'
+      ...
+    # Subtest: bloquea ejecución no autorizada si CRON_SECRET está configurado y el token no coincide
+    ok 2 - bloquea ejecución no autorizada si CRON_SECRET está configurado y el token no coincide
+      ---
+      duration_ms: 0.8647
+      type: 'test'
+      ...
+    # Subtest: identifica y expira presupuestos vencidos en estado sent y viewed, dejando intactos los vigentes
+    ok 3 - identifica y expira presupuestos vencidos en estado sent y viewed, dejando intactos los vigentes
+      ---
+      duration_ms: 16.0857
+      type: 'test'
+      ...
+    # Subtest: itera todas las organizaciones vía Repository cuando no se especifica orgId
+    ok 4 - itera todas las organizaciones vía Repository cuando no se especifica orgId
+      ---
+      duration_ms: 3.1444
+      type: 'test'
+      ...
+    1..4
+ok 20 - Proceso Cron de Caducidad de Presupuestos (cron-expire.ts)
+  ---
+  duration_ms: 25.8975
+  type: 'suite'
+  ...
+# Subtest: FASE 10: Algoritmo de Luminancia y Contraste WCAG 2.1 / 2.2 AA (contrast.test.ts)
+    # Subtest: Ratio entre \#000000 y \#FFFFFF es exactamente 21:1
+    ok 1 - Ratio entre \#000000 y \#FFFFFF es exactamente 21:1
+      ---
+      duration_ms: 1.3093
+      type: 'test'
+      ...
+    # Subtest: \#767676 sobre \#FFFFFF pasa para texto normal (>= 4.5:1) mientras \#777777 falla
+    ok 2 - \#767676 sobre \#FFFFFF pasa para texto normal (>= 4.5:1) mientras \#777777 falla
+      ---
+      duration_ms: 0.4044
+      type: 'test'
+      ...
+    # Subtest: pickReadableText selecciona blanco sobre negro y negro sobre blanco
+    ok 3 - pickReadableText selecciona blanco sobre negro y negro sobre blanco
+      ---
+      duration_ms: 1.2349
+      type: 'test'
+      ...
+    # Subtest: Conversión bidireccional hex <-> rgb y validación de sintaxis
+    ok 4 - Conversión bidireccional hex <-> rgb y validación de sintaxis
+      ---
+      duration_ms: 1.9246
+      type: 'test'
+      ...
+    # Subtest: Luminancia relativa de colores de referencia estandarizados
+    ok 5 - Luminancia relativa de colores de referencia estandarizados
+      ---
+      duration_ms: 0.3095
+      type: 'test'
+      ...
+    1..5
+ok 21 - FASE 10: Algoritmo de Luminancia y Contraste WCAG 2.1 / 2.2 AA (contrast.test.ts)
+  ---
+  duration_ms: 7.7444
+  type: 'test'
+  ...
+# Subtest: Verificación de Reglas SQL, Triggers e Inmutabilidad (Fases 3 y 6)
+    # Subtest: Verifica que todas las migraciones SQL existen y definen las políticas requeridas
+    ok 1 - Verifica que todas las migraciones SQL existen y definen las políticas requeridas
+      ---
+      duration_ms: 3.8201
+      type: 'test'
+      ...
+    # Subtest: Simula y verifica la regla del trigger de inmutabilidad de documentos sellados (locked_at)
+    ok 2 - Simula y verifica la regla del trigger de inmutabilidad de documentos sellados (locked_at)
+      ---
+      duration_ms: 0.8568
+      type: 'test'
+      ...
+    # Subtest: Simula y verifica la regla del trigger de inalterabilidad append-only para billing_records y audit_events
+    ok 3 - Simula y verifica la regla del trigger de inalterabilidad append-only para billing_records y audit_events
+      ---
+      duration_ms: 0.4316
+      type: 'test'
+      ...
+    # Subtest: Verifica la existencia del script de pruebas SQL oficial en supabase/tests/database_integrity.sql
+    ok 4 - Verifica la existencia del script de pruebas SQL oficial en supabase/tests/database_integrity.sql
+      ---
+      duration_ms: 0.8522
+      type: 'test'
+      ...
+    1..4
+ok 22 - Verificación de Reglas SQL, Triggers e Inmutabilidad (Fases 3 y 6)
+  ---
+  duration_ms: 7.6477
+  type: 'suite'
+  ...
+# Subtest: Seguridad, Inmutabilidad y Limpieza de Código (Fase 12)
+    # Subtest: No deben existir secretos de servidor ni claves maestras en el código cliente o estático
+    ok 1 - No deben existir secretos de servidor ni claves maestras en el código cliente o estático
+      ---
+      duration_ms: 17.0156
+      type: 'test'
+      ...
+    # Subtest: Almacenamiento local solo puede ser accedido en lib/repo/local.ts
+    ok 2 - Almacenamiento local solo puede ser accedido en lib/repo/local.ts
+      ---
+      duration_ms: 25.464
+      type: 'test'
+      ...
+    # Subtest: Generación aleatoria no criptográfica no debe utilizarse en src/lib/
+    ok 3 - Generación aleatoria no criptográfica no debe utilizarse en src/lib/
+      ---
+      duration_ms: 10.8215
+      type: 'test'
+      ...
+    # Subtest: Cero menciones a términos restringidos o modelos generativos en producción
+    ok 4 - Cero menciones a términos restringidos o modelos generativos en producción
+      ---
+      duration_ms: 24.2544
+      type: 'test'
+      ...
+    1..4
+ok 23 - Seguridad, Inmutabilidad y Limpieza de Código (Fase 12)
+  ---
+  duration_ms: 79.6365
+  type: 'suite'
+  ...
+# Subtest: FASE 10: Preferencias de Tema, Resolución y Cookie (theme.test.ts)
+    # Subtest: parseUiPreferences con null, undefined, cadena vacía o JSON malformado devuelve siempre valores por defecto
+    ok 1 - parseUiPreferences con null, undefined, cadena vacía o JSON malformado devuelve siempre valores por defecto
+      ---
+      duration_ms: 3.4892
+      type: 'test'
+      ...
+    # Subtest: resolveMode resuelve modo del sistema y modo explícito de forma pura y determinista
+    ok 2 - resolveMode resuelve modo del sistema y modo explícito de forma pura y determinista
+      ---
+      duration_ms: 0.4412
+      type: 'test'
+      ...
+    # Subtest: Cookie pe_ui serializada y deserializada preserva íntegramente todos los campos
+    ok 3 - Cookie pe_ui serializada y deserializada preserva íntegramente todos los campos
+      ---
+      duration_ms: 0.4874
+      type: 'test'
+      ...
+    # Subtest: parseUiCookie gestiona encabezados nulos o sin la cookie pe_ui
+    ok 4 - parseUiCookie gestiona encabezados nulos o sin la cookie pe_ui
+      ---
+      duration_ms: 0.2069
+      type: 'test'
+      ...
+    1..4
+ok 24 - FASE 10: Preferencias de Tema, Resolución y Cookie (theme.test.ts)
+  ---
+  duration_ms: 5.7651
+  type: 'test'
+  ...
+# Subtest: FASE 10: Validación Estricta de Tokens Semánticos (tokens.test.ts)
+    # Subtest: El archivo src/styles/tokens.css existe y no está vacío
+    ok 1 - El archivo src/styles/tokens.css existe y no está vacío
+      ---
+      duration_ms: 1.2994
+      type: 'test'
+      ...
+    # Subtest: El bloque @media dark y el selector [data-theme="dark"] declaran exactamente las mismas variables y valores
+    ok 2 - El bloque @media dark y el selector [data-theme="dark"] declaran exactamente las mismas variables y valores
+      ---
+      duration_ms: 1.4786
+      type: 'test'
+      ...
+    # Subtest: Todos los tokens semánticos esenciales existen tanto en modo claro como en modo oscuro
+    ok 3 - Todos los tokens semánticos esenciales existen tanto en modo claro como en modo oscuro
+      ---
+      duration_ms: 0.2937
+      type: 'test'
+      ...
+    # Subtest: Ningún color de texto semántico tiene ratio < 4.5:1 contra su superficie
+    ok 4 - Ningún color de texto semántico tiene ratio < 4.5:1 contra su superficie
+      ---
+      duration_ms: 0.6494
+      type: 'test'
+      ...
+    # Subtest: Los bordes de inputs tienen ratio >= 3:1 contra --bg-app o --bg-surface (WCAG 2.1 Non-text contrast)
+    ok 5 - Los bordes de inputs tienen ratio >= 3:1 contra --bg-app o --bg-surface (WCAG 2.1 Non-text contrast)
+      ---
+      duration_ms: 0.3075
+      type: 'test'
+      ...
+    1..5
+ok 25 - FASE 10: Validación Estricta de Tokens Semánticos (tokens.test.ts)
+  ---
+  duration_ms: 6.9213
+  type: 'test'
+  ...
+1..25
+# tests 188
+# suites 24
+# pass 188
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1740.4525
+[check-clean] ÉXITO: 0 términos prohibidos, 0 datos de ejemplo, 0 Math.random en lib, y localStorage estrictamente aislado.
+[verify-scope] Verificando alcance estricto de modificaciones (presupuesto-express-v2)...
+warning: in the working copy of 'docs/CUMPLIMIENTO.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/app/api/cron/expire/route.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/lib/__tests__/compliance.test.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/lib/__tests__/pdf.test.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/lib/__tests__/repository.test.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/lib/__tests__/stripe.test.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/lib/compliance/qr.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/lib/domain/cron-expire.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/lib/repo/local.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/lib/repo/memory.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/lib/repo/supabase.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'tests/api-cron-expire.test.ts', LF will be replaced by CRLF the next time Git touches it
+[verify-scope] ÉXITO: Todos los cambios están 100% contenidos dentro de presupuesto-express-v2. Carpeta "bot ventas" completamente intacta.

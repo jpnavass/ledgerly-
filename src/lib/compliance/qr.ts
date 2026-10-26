@@ -1,5 +1,5 @@
 // ============================================================================
-// Generación de Código QR Oficial y URL de Cotejo (Orden HAC/1177/2024)
+// Generación de Código QR y URL de Cotejo (parámetros según especificación AEAT, no verificados)
 // ============================================================================
 
 import QRCode from 'qrcode';
@@ -14,8 +14,8 @@ export interface QrUrlParams {
 }
 
 /**
- * Construye la URL oficial de cotejo de la factura según la Orden HAC/1177/2024 Artículo 21.2.
- * Parámetros reglamentarios exclusivos: nif, numserie, fecha e importe.
+ * Construye la URL de cotejo de la factura (parámetros según especificación AEAT, no verificados).
+ * Parámetros: nif, numserie, fecha e importe.
  */
 export function buildQrVerificationUrl(params: QrUrlParams): string {
   const { taxId, seriesNumber, issueDate, totalCents, isVerifactu = false } = params;

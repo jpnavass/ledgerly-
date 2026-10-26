@@ -213,7 +213,7 @@ describe('Generación de PDF Oficial A4 (pdf.ts)', () => {
     assert.ok(text.includes(fullBillingRecordHash));
   });
 
-  it('el PDF de una factura contiene código QR decodificable con parámetros reglamentarios', async () => {
+  it('el PDF de una factura contiene código QR decodificable (parámetros según especificación AEAT, no verificados)', async () => {
     const billingHash = '3C464DAF61ACB827C65FDA19F352A4E3BDC2C640E9E9FC4CC058073F38F12F60';
     const invoiceDoc: Document = {
       ...sampleDoc,
@@ -266,5 +266,83 @@ describe('Generación de PDF Oficial A4 (pdf.ts)', () => {
     const { buffer, pdfHash } = await generateDocumentPdf(doc120, testOrg, testClient);
     assert(buffer.length > 3000);
     assert.strictEqual(pdfHash.length, 64);
+  });
+
+  it('ramas de plantilla PDF: tipos proforma, rectificativa, albarán, retención IRPF y campos opcionales', async () => {
+    // 1. Factura rectificativa por sustitución con retención IRPF
+    const creditNoteDoc: Document = {
+      ...sampleDoc,
+      id: 'doc-cn-1',
+      doc_type: 'credit_note',
+      series: 'REC',
+      number: 5,
+      rectifies_document_id: 'doc-orig-1',
+      rectification_reason: 'Error en cantidad facturada',
+      rectification_method: 'substitution',
+      subtotal_cents: 50000,
+      vat_cents: 10500,
+      irpf_cents: 7500,
+      total_cents: 53000,
+    };
+
+    const resCn = await generateDocumentPdf(creditNoteDoc, testOrg, testClient);
+    const textCn = extractAllPdfText(resCn.buffer);
+    assert.ok(textCn.includes('Factura Rectificativa') || textCn.includes('RECTIFICATIVA'));
+    assert.ok(textCn.includes('sustituci') || textCn.includes('sustitucion'));
+    assert.ok(textCn.includes('Retenci') || textCn.includes('IRPF'));
+
+    // 2. Factura rectificativa por diferencias
+    const diffCnDoc: Document = {
+      ...creditNoteDoc,
+      rectification_method: 'differences',
+    };
+    const resDiff = await generateDocumentPdf(diffCnDoc, testOrg, testClient);
+    const textDiff = extractAllPdfText(resDiff.buffer);
+    assert.ok(textDiff.includes('Por diferencias'));
+
+    // 3. Proforma y Albarán
+    const proformaDoc: Document = {
+      ...sampleDoc,
+      doc_type: 'proforma',
+      series: 'PRO',
+      number: 12,
+    };
+    const resPro = await generateDocumentPdf(proformaDoc, testOrg, testClient);
+    const textPro = extractAllPdfText(resPro.buffer);
+    assert.ok(textPro.includes('Factura Proforma') || textPro.includes('PROFORMA'));
+
+    const deliveryDoc: Document = {
+      ...sampleDoc,
+      doc_type: 'delivery_note',
+      series: 'ALB',
+      number: 8,
+    };
+    const resDel = await generateDocumentPdf(deliveryDoc, testOrg, testClient);
+    const textDel = extractAllPdfText(resDel.buffer);
+    assert.ok(textDel.includes('Albar') || textDel.includes('ALBAR'));
+
+    // 4. Presupuesto borrador sin serie ni número y cliente sin dirección
+    const draftQuote: Document = {
+      ...sampleDoc,
+      doc_type: 'quote',
+      series: null,
+      number: null,
+      valid_until: '2027-04-30',
+    };
+    const clientNoAddr: Client = {
+      id: 'cli-no-addr',
+      name: 'Particular Sin Dirección',
+      tax_id: '99999999R',
+    };
+    const orgNoEmail: Org = {
+      ...testOrg,
+      email: undefined,
+    };
+
+    const resDraft = await generateDocumentPdf(draftQuote, orgNoEmail, clientNoAddr);
+    const textDraft = extractAllPdfText(resDraft.buffer);
+    assert.ok(textDraft.includes('BORRADOR'));
+    assert.ok(textDraft.includes('Validez hasta: 2027-04-30'));
+    assert.ok(textDraft.includes('Domicilio fiscal no aportado'));
   });
 });

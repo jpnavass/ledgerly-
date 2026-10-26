@@ -38,6 +38,27 @@ describe('Proceso Cron de Caducidad de Presupuestos (cron-expire.ts)', () => {
     await memoryRepo.saveClient(orgId, testClient);
   });
 
+  it('sin CRON_SECRET definido o vacío debe fallar cerrado devolviendo unauthorized: true', async () => {
+    // 1. cronSecret no definido (undefined)
+    const resUndefined = await processExpiredQuotes({
+      repo: memoryRepo,
+      orgId,
+      authorizationHeader: 'Bearer cualquier-token',
+    });
+    assert.strictEqual(resUndefined.ok, false);
+    assert.strictEqual(resUndefined.unauthorized, true);
+
+    // 2. cronSecret cadena vacía o solo espacios
+    const resEmpty = await processExpiredQuotes({
+      repo: memoryRepo,
+      orgId,
+      cronSecret: '   ',
+      authorizationHeader: 'Bearer cualquier-token',
+    });
+    assert.strictEqual(resEmpty.ok, false);
+    assert.strictEqual(resEmpty.unauthorized, true);
+  });
+
   it('bloquea ejecución no autorizada si CRON_SECRET está configurado y el token no coincide', async () => {
     // 1. Petición sin autorización
     const resNoAuth = await processExpiredQuotes({
@@ -140,6 +161,8 @@ describe('Proceso Cron de Caducidad de Presupuestos (cron-expire.ts)', () => {
       repo: memoryRepo,
       orgId,
       todayIso: '2027-02-01',
+      cronSecret: 'test-cron-secret',
+      authorizationHeader: 'Bearer test-cron-secret',
     });
 
     assert.strictEqual(res.ok, true);
@@ -230,6 +253,8 @@ describe('Proceso Cron de Caducidad de Presupuestos (cron-expire.ts)', () => {
     const result = await processExpiredQuotes({
       repo: memoryRepo,
       todayIso: '2027-02-01',
+      cronSecret: 'test-cron-secret',
+      authorizationHeader: 'Bearer test-cron-secret',
     });
 
     assert.strictEqual(result.ok, true);

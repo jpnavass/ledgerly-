@@ -39,22 +39,33 @@ export async function processExpiredQuotes(
     authorizationHeader,
   } = options;
 
-  // 1. Verificación de autorización con CRON_SECRET si está configurado
-  if (cronSecret) {
-    const token = authorizationHeader?.startsWith('Bearer ')
-      ? authorizationHeader.slice(7)
-      : '';
-    if (token !== cronSecret) {
-      return {
-        ok: false,
-        unauthorized: true,
-        organizationsCount: 0,
-        processedCount: 0,
-        expiredCount: 0,
-        expiredIds: [],
-        evaluatedDate: todayIso,
-      };
-    }
+  // 1. Verificación de autorización estricta (política fail-closed)
+  // Si CRON_SECRET no está definido en el servidor o es vacío, la ejecución se bloquea por seguridad
+  if (!cronSecret || cronSecret.trim().length === 0) {
+    return {
+      ok: false,
+      unauthorized: true,
+      organizationsCount: 0,
+      processedCount: 0,
+      expiredCount: 0,
+      expiredIds: [],
+      evaluatedDate: todayIso,
+    };
+  }
+
+  const token = authorizationHeader?.startsWith('Bearer ')
+    ? authorizationHeader.slice(7)
+    : '';
+  if (token !== cronSecret) {
+    return {
+      ok: false,
+      unauthorized: true,
+      organizationsCount: 0,
+      processedCount: 0,
+      expiredCount: 0,
+      expiredIds: [],
+      evaluatedDate: todayIso,
+    };
   }
 
   // 2. Determinar las organizaciones a procesar

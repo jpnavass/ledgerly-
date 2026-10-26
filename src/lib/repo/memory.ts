@@ -38,7 +38,12 @@ export class MemoryRepository implements DataRepository {
       );
     }
 
-    return docs.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+    let sorted = docs.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+    if (params?.page && params?.limit) {
+      const start = (params.page - 1) * params.limit;
+      sorted = sorted.slice(start, start + params.limit);
+    }
+    return sorted;
   }
 
   async getDocumentById(orgId: string, id: string): Promise<Document | null> {

@@ -2,9 +2,9 @@ import test, { describe, it, beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
 
 import { MemoryRepository } from '../repo/memory.ts';
-import { LocalStorageRepository } from '../repo/local.ts';
+import { LocalStorageRepository, safeGetStorage, safeSetStorage } from '../repo/local.ts';
 import type { DataRepository } from '../repo/types.ts';
-import type { Document, Client, CatalogItem, Payment, AuditEvent } from '../../types/index.ts';
+import type { Document, Client, CatalogItem, Payment, AuditEvent, Org, OrgSettings, License, Membership } from '../../types/index.ts';
 
 // Setup de almacenamiento simulado para LocalStorageRepository
 const storageMap = new Map<string, string>();
@@ -299,5 +299,218 @@ for (const impl of implementations) {
       assert.strictEqual(events.length, 1);
       assert.strictEqual(events[0].id, 'aud-1');
     });
+
+    it('búsqueda de texto, filtrado por cliente y paginación en getDocuments', async () => {
+      const doc1: Document = {
+        id: 'doc-search-1',
+        org_id: orgA,
+        client_id: 'cli-search-1',
+        title: 'Reforma Integral Cocina',
+        doc_type: 'quote',
+        series: 'PRE',
+        number: 101,
+        version: 1,
+        status: 'draft',
+        subtotal_cents: 1000,
+        discount_cents: 0,
+        vat_cents: 210,
+        irpf_cents: 0,
+        total_cents: 1210,
+        items: [],
+        created_at: '2027-01-01T10:00:00Z',
+        updated_at: '2027-01-01T10:00:00Z',
+      };
+
+      const doc2: Document = {
+        id: 'doc-search-2',
+        org_id: orgA,
+        client_id: 'cli-search-1',
+        title: 'Instalación Climatización Baño',
+        doc_type: 'quote',
+        series: 'PRE',
+        number: 102,
+        version: 1,
+        status: 'sent',
+        subtotal_cents: 2000,
+        discount_cents: 0,
+        vat_cents: 420,
+        irpf_cents: 0,
+        total_cents: 2420,
+        items: [],
+        created_at: '2027-01-02T10:00:00Z',
+        updated_at: '2027-01-02T10:00:00Z',
+      };
+
+      const doc3: Document = {
+        id: 'doc-search-3',
+        org_id: orgA,
+        client_id: 'cli-search-2',
+        title: 'Pintura Exterior Fachada',
+        doc_type: 'invoice',
+        series: 'FAC',
+        number: 50,
+        version: 1,
+        status: 'draft',
+        subtotal_cents: 3000,
+        discount_cents: 0,
+        vat_cents: 630,
+        irpf_cents: 0,
+        total_cents: 3630,
+        items: [],
+        created_at: '2027-01-03T10:00:00Z',
+        updated_at: '2027-01-03T10:00:00Z',
+      };
+
+      await repo.saveDocument(orgA, doc1);
+      await repo.saveDocument(orgA, doc2);
+      await repo.saveDocument(orgA, doc3);
+
+      // Búsqueda por título
+      const resCocina = await repo.getDocuments(orgA, { search: 'Cocina' });
+      assert.strictEqual(resCocina.length, 1);
+      assert.strictEqual(resCocina[0].id, 'doc-search-1');
+
+      // Búsqueda por serie
+      const resPre = await repo.getDocuments(orgA, { search: 'pre' });
+      assert.strictEqual(resPre.length, 2);
+
+      // Búsqueda por número
+      const resNum = await repo.getDocuments(orgA, { search: '50' });
+      assert.strictEqual(resNum.length, 1);
+      assert.strictEqual(resNum[0].id, 'doc-search-3');
+
+      // Filtrado por client_id
+      const resClient = await repo.getDocuments(orgA, { client_id: 'cli-search-1' });
+      assert.strictEqual(resClient.length, 2);
+
+      // Paginación: page 1 limit 2 (ordenado desc por fecha)
+      const page1 = await repo.getDocuments(orgA, { page: 1, limit: 2 });
+      assert.strictEqual(page1.length, 2);
+      assert.strictEqual(page1[0].id, 'doc-search-3');
+      assert.strictEqual(page1[1].id, 'doc-search-2');
+
+      const page2 = await repo.getDocuments(orgA, { page: 2, limit: 2 });
+      assert.strictEqual(page2.length, 1);
+      assert.strictEqual(page2[0].id, 'doc-search-1');
+    });
+
+    it('casos de error y borrado de elementos inexistentes en todos los métodos', async () => {
+      // Borrado de documento inexistente
+      const delDocNonExistent = await repo.deleteDocument(orgA, 'doc-does-not-exist');
+      assert.strictEqual(delDocNonExistent, false);
+
+      // Borrado de cliente inexistente
+      const delCliNonExistent = await repo.deleteClient(orgA, 'cli-does-not-exist');
+      assert.strictEqual(delCliNonExistent, false);
+
+      // Borrado de partida de catálogo inexistente
+      const delCatNonExistent = await repo.deleteCatalogItem(orgA, 'cat-does-not-exist');
+      assert.strictEqual(delCatNonExistent, false);
+
+      // Borrado de miembro inexistente
+      const delMemNonExistent = await repo.deleteMember(orgA, 'mem-does-not-exist');
+      assert.strictEqual(delMemNonExistent, false);
+
+      // Búsqueda de documento por token o ID inexistente
+      const byTokenNull = await repo.findDocumentByTokenOrId('non-existent-token-or-id');
+      assert.strictEqual(byTokenNull, null);
+    });
+
+    it('gestión de miembros, organizaciones, ajustes y licencias', async () => {
+      // 1. Miembros de organización
+      const member: Membership = {
+        id: 'mem-1',
+        org_id: orgA,
+        user_id: 'usr-123',
+        role: 'employee',
+        created_at: new Date().toISOString(),
+      };
+      await repo.saveMember(member);
+      const members = await repo.getMembers(orgA);
+      assert.strictEqual(members.length, 1);
+      assert.strictEqual(members[0].role, 'employee');
+
+      const deletedMem = await repo.deleteMember(orgA, 'mem-1');
+      assert.strictEqual(deletedMem, true);
+      const membersAfter = await repo.getMembers(orgA);
+      assert.strictEqual(membersAfter.length, 0);
+
+      // 2. Organización y getAllOrganizations
+      const org: Org = {
+        id: 'org-test-multi',
+        name: 'Multi Org Test S.L.',
+        tax_id: 'B99998888',
+        address: 'Calle Industria 1',
+        postal_code: '28001',
+        city: 'Madrid',
+        country: 'España',
+      };
+      await repo.saveOrganization(org);
+      const fetchedOrg = await repo.getOrganization('org-test-multi');
+      assert.strictEqual(fetchedOrg?.name, 'Multi Org Test S.L.');
+
+      const allOrgs = await repo.getAllOrganizations();
+      assert.ok(allOrgs.some((o) => o.id === 'org-test-multi'));
+
+      // 3. Ajustes de Organización
+      const settings: OrgSettings = {
+        org_id: orgA,
+        default_vat_rate: 21,
+        default_irpf_rate: 15,
+        default_validity_days: 30,
+        default_payment_terms_days: 15,
+        surcharge_enabled: false,
+        theme: 'light',
+      };
+      await repo.saveOrgSettings(orgA, settings);
+      const fetchedSettings = await repo.getOrgSettings(orgA);
+      assert.strictEqual(fetchedSettings?.default_irpf_rate, 15);
+
+      // 4. Licencias
+      const license: License = {
+        id: 'lic-branch-1',
+        org_id: orgA,
+        plan: 'pro',
+        valid_until: '2028-01-01T00:00:00Z',
+        is_active: true,
+        stripe_subscription_id: 'sub-stripe-branch-test',
+      };
+      await repo.saveLicense(license);
+
+      const licByOrg = await repo.getLicense(orgA);
+      assert.strictEqual(licByOrg?.plan, 'pro');
+
+      const licBySub = await repo.getLicenseBySubscriptionId('sub-stripe-branch-test');
+      assert.strictEqual(licBySub?.org_id, orgA);
+
+      const licNotFound = await repo.getLicenseBySubscriptionId('sub-not-found');
+      assert.strictEqual(licNotFound, null);
+    });
   });
 }
+
+describe('Mecanismos de Fallback de Almacenamiento Local (local.ts)', () => {
+  it('safeGetStorage devuelve el valor de reserva ante JSON corrupto o entorno SSR', () => {
+    storageMap.set('corrupt_key', '{ not-valid-json ]');
+    const fallbackVal = { default: true };
+    const val = safeGetStorage('corrupt_key', fallbackVal);
+    assert.deepStrictEqual(val, fallbackVal);
+  });
+
+  it('safeSetStorage maneja excepciones de cuota en almacenamiento del navegador sin propagar caída', () => {
+    const errorStorage = {
+      getItem: () => null,
+      setItem: () => {
+        throw new Error('QuotaExceededError');
+      },
+      removeItem: () => {},
+      clear: () => {},
+    };
+    (globalThis as any).window[storageKey] = errorStorage;
+    assert.doesNotThrow(() => {
+      safeSetStorage('test_key', { foo: 'bar' });
+    });
+    // Restaurar mockStorage
+    (globalThis as any).window[storageKey] = mockStorage;
+  });
+});

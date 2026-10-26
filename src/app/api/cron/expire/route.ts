@@ -19,10 +19,17 @@ async function handleExpire(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const orgId = searchParams.get('org_id') || undefined;
-    const today = searchParams.get('today') || new Date().toISOString().slice(0, 10);
     const authHeader = request.headers.get('authorization');
     const cronSecret = process.env.CRON_SECRET;
 
+    if (!cronSecret || cronSecret.trim().length === 0) {
+      return NextResponse.json(
+        { error: 'CRON_SECRET no configurado en el servidor (fallo cerrado).' },
+        { status: 500 }
+      );
+    }
+
+    const today = searchParams.get('today') || undefined;
     const repo = getRepository();
 
     const result = await processExpiredQuotes({

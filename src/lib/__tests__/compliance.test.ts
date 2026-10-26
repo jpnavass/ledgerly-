@@ -19,6 +19,7 @@ import {
   calculateExponentialBackoff,
   AeatCertificateMissingError,
 } from '../compliance/aeat-submission.ts';
+import { createSignatureEvidence, verifySignatureEvidence } from '../compliance/evidence.ts';
 import type { BillingRecord, Document, Org, AuditEvent } from '../../types/index.ts';
 
 describe('Cumplimiento Normativo y Registros Inalterables (compliance.ts)', () => {
@@ -30,8 +31,8 @@ describe('Cumplimiento Normativo y Registros Inalterables (compliance.ts)', () =
     );
   });
 
-  it('vector oficial AEAT para generación de huella de registro de facturación de alta (Fuente: AEAT - Especificaciones Técnicas Orden HAC/1177/2024)', async () => {
-    // Fuente oficial: "Detalle de las especificaciones técnicas para la generación de la huella o hash de los registros de facturación", AEAT / RD 1007/2023.
+  it('vector no contrastado con documento oficial', async () => {
+    // Parámetros según especificación técnica AEAT, vector no contrastado con documento oficial.
     const payload = formatAeatHashPayload({
       taxId: '89890001K',
       seriesNumber: '12345678/G33',
@@ -162,7 +163,7 @@ describe('Cumplimiento Normativo y Registros Inalterables (compliance.ts)', () =
     assert.strictEqual(deletedVerification.firstBrokenIndex, 50);
   });
 
-  it('formatea y genera URL de verificación QR con parámetros oficiales según Orden HAC/1177/2024', async () => {
+  it('formatea y genera URL de verificación QR (parámetros según especificación AEAT, no verificados)', async () => {
     const qrUrl = buildQrVerificationUrl({
       taxId: 'B88549126',
       seriesNumber: 'FAC-0048',
@@ -182,7 +183,7 @@ describe('Cumplimiento Normativo y Registros Inalterables (compliance.ts)', () =
     assert(svg.includes('<svg'));
   });
 
-  it('código QR: decodifica el payload y comprueba minuciosamente los parámetros exactos de la Orden HAC/1177/2024 Art. 21.2', () => {
+  it('código QR: decodifica el payload (parámetros según especificación AEAT, no verificados)', () => {
     const qrUrl = buildQrVerificationUrl({
       taxId: 'B12345678',
       seriesNumber: 'FAC-2027/01',
@@ -400,5 +401,66 @@ describe('Cumplimiento Normativo y Registros Inalterables (compliance.ts)', () =
     const failCancel = await verifyBillingChain([rec1, tamperedCancel], org.tax_id);
     assert.strictEqual(failCancel.ok, false);
     assert.strictEqual(failCancel.firstBrokenIndex, 1);
+  });
+
+  it('evidencias de firma eIDAS (evidence.ts): generación completa y verificación de autenticidad', async () => {
+    // 1. Paquete con todos los campos opcionales provistos
+    const sigFull = await createSignatureEvidence({
+      documentId: 'doc-sig-1',
+      documentVersion: 1,
+      signerName: 'Juan Pérez García ',
+      signerTaxId: ' 12345678z ',
+      signerEmail: ' Juan.Perez@Empresa.es ',
+      signatureImagePath: 'signatures/sig1.png',
+      documentPdfHash: 'AABBCCDDEEFF00112233445566778899AABBCCDDEEFF00112233445566778899',
+      otpVerified: true,
+      ip: '192.168.1.50',
+      userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
+      signedAt: '2027-03-01T10:00:00Z',
+    });
+
+    assert.strictEqual(sigFull.signer_name, 'Juan Pérez García');
+    assert.strictEqual(sigFull.signer_tax_id, '12345678Z');
+    assert.strictEqual(sigFull.signer_email, 'juan.perez@empresa.es');
+    assert.strictEqual(sigFull.evidence_hash.length, 64);
+
+    // Verificación válida coincidiendo con el hash del PDF
+    const checkFull = await verifySignatureEvidence(
+      sigFull,
+      'AABBCCDDEEFF00112233445566778899AABBCCDDEEFF00112233445566778899'
+    );
+    assert.strictEqual(checkFull.ok, true);
+
+    // 2. Paquete con campos opcionales omitidos (ip y userAgent por defecto, sin email)
+    const sigDefaults = await createSignatureEvidence({
+      documentId: 'doc-sig-2',
+      documentVersion: 1,
+      signerName: 'Ana Gómez',
+      signerTaxId: '87654321A',
+      documentPdfHash: '11223344556677889900AABBCCDDEEFF11223344556677889900AABBCCDDEEFF',
+      otpVerified: false,
+      signedAt: '2027-03-01T11:00:00Z',
+    });
+
+    assert.strictEqual(sigDefaults.signer_email, undefined);
+    const checkDefaults = await verifySignatureEvidence(sigDefaults);
+    assert.strictEqual(checkDefaults.ok, true);
+
+    // 3. Rama de discrepancia de hash de documento PDF
+    const checkMismatchPdf = await verifySignatureEvidence(
+      sigFull,
+      'HASH_DISTINTO_NO_COINCIDENTE_0000000000000000000000000000000000000'
+    );
+    assert.strictEqual(checkMismatchPdf.ok, false);
+    assert.ok(checkMismatchPdf.reason?.includes('difiere'));
+
+    // 4. Rama de manipulación en los datos de la firma (evidencia alterada)
+    const tamperedSig = {
+      ...sigFull,
+      signer_name: 'Atacante Malicioso',
+    };
+    const checkTampered = await verifySignatureEvidence(tamperedSig);
+    assert.strictEqual(checkTampered.ok, false);
+    assert.ok(checkTampered.reason?.includes('manipulado'));
   });
 });

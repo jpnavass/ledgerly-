@@ -6,6 +6,7 @@
 import type { DataRepository, DocumentFilterParams, PaginationParams } from './types.ts';
 import type { Document, Client, CatalogItem, Payment, AuditEvent, Org, OrgSettings, License, Membership, UserRole } from '../../types/index.ts';
 import { createClient } from '../supabase/client.ts';
+import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 
 export class SupabaseRepository implements DataRepository {
   private getClient() {
@@ -14,6 +15,17 @@ export class SupabaseRepository implements DataRepository {
       throw new Error('Variables de entorno de Supabase no configuradas.');
     }
     return client;
+  }
+
+  private getServiceClient() {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
+    const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    if (supabaseUrl && serviceRoleKey) {
+      return createSupabaseClient(supabaseUrl, serviceRoleKey, {
+        auth: { persistSession: false, autoRefreshToken: false },
+      });
+    }
+    return this.getClient();
   }
 
   // Documentos
@@ -281,7 +293,7 @@ export class SupabaseRepository implements DataRepository {
 
   // Organización y Ajustes
   async getAllOrganizations(): Promise<Org[]> {
-    const supabase = this.getClient();
+    const supabase = this.getServiceClient();
     const { data, error } = await supabase.from('orgs').select('*');
     if (error || !data) return [];
     return data as Org[];

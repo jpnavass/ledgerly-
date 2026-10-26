@@ -152,18 +152,131 @@ describe('Webhooks de Stripe: Idempotencia y Actualización de Licencias', () =>
     assert.strictEqual(updated.is_active, false);
   });
 
-  it('firma inválida de webhook es rechazada con excepción', () => {
+  it('checkout.session.completed sin org_id devuelve fallo controlado con reason missing_org_id_in_session', async () => {
+    const mockEvent = {
+      id: 'evt_no_org_001',
+      type: 'checkout.session.completed',
+      data: {
+        object: {
+          customer: 'cus_no_org',
+          subscription: 'sub_no_org',
+          metadata: {},
+        },
+      },
+    } as unknown as Stripe.Event;
+
+    const res = await processStripeEvent(mockEvent, mockRepo);
+    assert.strictEqual(res.processed, false);
+    assert.strictEqual(res.reason, 'missing_org_id_in_session');
+  });
+
+  it('procesa customer.subscription.updated actualizando estado y fecha de vigencia', async () => {
+    storedLicenses.set('org-empresa-5', {
+      id: 'lic-5',
+      org_id: 'org-empresa-5',
+      plan: 'pro',
+      valid_until: new Date(Date.now() + 100000).toISOString(),
+      is_active: false,
+      stripe_subscription_id: 'sub_active_again',
+    });
+
+    const updateEvent = {
+      id: 'evt_sub_upd_1',
+      type: 'customer.subscription.updated',
+      data: {
+        object: {
+          id: 'sub_active_again',
+          status: 'active',
+          current_period_end: Math.floor(Date.now() / 1000) + 86400 * 30,
+        },
+      },
+    } as unknown as Stripe.Event;
+
+    const res = await processStripeEvent(updateEvent, mockRepo);
+    assert.strictEqual(res.processed, true);
+    const updated = storedLicenses.get('org-empresa-5');
+    assert(updated);
+    assert.strictEqual(updated.is_active, true);
+
+    // Si la suscripción no existe en el repositorio, no lanza excepción
+    const updateUnknown = {
+      id: 'evt_sub_upd_unknown',
+      type: 'customer.subscription.updated',
+      data: {
+        object: {
+          id: 'sub_does_not_exist',
+          status: 'canceled',
+        },
+      },
+    } as unknown as Stripe.Event;
+    const resUnknown = await processStripeEvent(updateUnknown, mockRepo);
+    assert.strictEqual(resUnknown.processed, true);
+  });
+
+  it('procesa invoice.payment_failed con subscription como objeto o nula sin fallar', async () => {
+    storedLicenses.set('org-empresa-6', {
+      id: 'lic-6',
+      org_id: 'org-empresa-6',
+      plan: 'business',
+      valid_until: new Date(Date.now() + 100000).toISOString(),
+      is_active: true,
+      stripe_subscription_id: 'sub_object_id',
+    });
+
+    // 1. Subscription como objeto { id: '...' }
+    const objEvent = {
+      id: 'evt_fail_obj_1',
+      type: 'invoice.payment_failed',
+      data: {
+        object: {
+          subscription: { id: 'sub_object_id' },
+        },
+      },
+    } as unknown as Stripe.Event;
+    const resObj = await processStripeEvent(objEvent, mockRepo);
+    assert.strictEqual(resObj.processed, true);
+    assert.strictEqual(storedLicenses.get('org-empresa-6')?.is_active, false);
+
+    // 2. Invoice sin subscription
+    const noSubEvent = {
+      id: 'evt_fail_no_sub',
+      type: 'invoice.payment_failed',
+      data: {
+        object: {},
+      },
+    } as unknown as Stripe.Event;
+    const resNoSub = await processStripeEvent(noSubEvent, mockRepo);
+    assert.strictEqual(resNoSub.processed, true);
+  });
+
+  it('eventos no manejados ejecutan la rama default y se registran sin error', async () => {
+    const unhandledEvent = {
+      id: 'evt_unhandled_type_999',
+      type: 'payment_intent.succeeded',
+      data: { object: {} },
+    } as unknown as Stripe.Event;
+
+    const res = await processStripeEvent(unhandledEvent, mockRepo);
+    assert.strictEqual(res.processed, true);
+  });
+
+  it('valida firma de webhook exitosa y de firma inválida rechazada', () => {
     const fakeStripe = {
       webhooks: {
         constructEvent(payload: string, signature: string, secret: string) {
           if (signature !== 'valid_sig') {
             throw new Error('No signatures found matching the expected signature for payload');
           }
-          return { id: 'evt_1', type: 'dummy' };
+          return { id: 'evt_1', type: 'checkout.session.completed' };
         },
       },
     } as unknown as Stripe;
 
+    // Caso exitoso
+    const evt = constructWebhookEvent(fakeStripe, '{"id":"evt_1"}', 'valid_sig', 'whsec_test');
+    assert.strictEqual(evt.id, 'evt_1');
+
+    // Caso inválido
     assert.throws(
       () =>
         constructWebhookEvent(fakeStripe, '{"id":"evt_1"}', 'bad_sig', 'whsec_test'),
