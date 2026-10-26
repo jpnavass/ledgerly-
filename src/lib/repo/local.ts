@@ -126,7 +126,7 @@ export class LocalStorageRepository implements DataRepository {
       throw new Error('No se puede eliminar un documento con numeración asignada.');
     }
     if (doc.locked_at) {
-      throw new Error('No se puede eliminar un documento sellado e inmutable.');
+      throw new Error('No se puede eliminar un documento bloqueado con locked_at e inmutable.');
     }
 
     const filtered = all.filter((d) => d.id !== id);

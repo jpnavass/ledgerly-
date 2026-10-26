@@ -71,7 +71,7 @@ describe('Límites y Planes SaaS (plans.ts)', () => {
     );
   });
 
-  it('Plan Free: bloquea características avanzadas (firma, tesorería, gastos)', () => {
+  it('Plan Free: bloquea módulos Pro (firma, tesorería, gastos)', () => {
     assert.throws(
       () =>
         assertWithinPlan(freeLicense, { documents_this_month: 0, active_users: 1 }, 'sign_document'),
@@ -91,7 +91,7 @@ describe('Límites y Planes SaaS (plans.ts)', () => {
     );
   });
 
-  it('Plan Pro: permite hasta 100 documentos, 5 usuarios y características avanzadas', () => {
+  it('Plan Pro: permite hasta 100 documentos, 5 usuarios y módulos Pro', () => {
     // 99 documentos -> OK
     assert.doesNotThrow(() =>
       assertWithinPlan(proLicense, { documents_this_month: 99, active_users: 4 }, 'create_document')
