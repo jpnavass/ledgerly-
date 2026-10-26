@@ -9,7 +9,7 @@ export async function POST(request: NextRequest) {
   try {
     const stripe = getStripeClient();
     const body = await request.json().catch(() => ({}));
-    const { plan, org_id } = body;
+    const { plan, org_id, customer_email } = body;
 
     if (!plan || (plan !== 'pro' && plan !== 'business')) {
       return NextResponse.json(
@@ -50,6 +50,7 @@ export async function POST(request: NextRequest) {
     const session = await stripe.checkout.sessions.create({
       mode: 'subscription',
       line_items: [lineItem],
+      customer_email: customer_email || undefined,
       client_reference_id: orgId,
       metadata: {
         org_id: orgId,

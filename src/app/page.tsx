@@ -812,20 +812,13 @@ export default function LandingPortalPage() {
                 </ul>
               </div>
 
-              <button
-                onClick={() => handleCheckout('pro')}
-                disabled={stripeLoading === 'pro'}
-                className="w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-xl text-center shadow-lg shadow-indigo-600/30 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+              <Link
+                href="/registro?plan=pro"
+                className="w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-xl text-center shadow-lg shadow-indigo-600/30 transition-all flex items-center justify-center gap-2 cursor-pointer"
               >
-                {stripeLoading === 'pro' ? (
-                  <Loader2 size={16} className="animate-spin" />
-                ) : (
-                  <>
-                    <Zap size={15} />
-                    <span>Contratar Profesional</span>
-                  </>
-                )}
-              </button>
+                <Zap size={15} />
+                <span>Contratar Profesional</span>
+              </Link>
             </div>
 
             {/* Plan Empresa */}
@@ -863,20 +856,13 @@ export default function LandingPortalPage() {
                 </ul>
               </div>
 
-              <button
-                onClick={() => handleCheckout('business')}
-                disabled={stripeLoading === 'business'}
-                className="w-full py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs font-bold rounded-xl text-center shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+              <Link
+                href="/registro?plan=business"
+                className="w-full py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs font-bold rounded-xl text-center shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer"
               >
-                {stripeLoading === 'business' ? (
-                  <Loader2 size={16} className="animate-spin" />
-                ) : (
-                  <>
-                    <Zap size={15} />
-                    <span>Contratar Empresa</span>
-                  </>
-                )}
-              </button>
+                <Zap size={15} />
+                <span>Contratar Empresa</span>
+              </Link>
             </div>
           </div>
         </div>

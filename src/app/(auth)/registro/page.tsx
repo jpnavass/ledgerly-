@@ -1,13 +1,16 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Building2, Mail, Lock, User, ArrowRight, Loader2, AlertCircle, CheckCircle } from 'lucide-react';
+import { Building2, Mail, Lock, User, ArrowRight, Loader2, AlertCircle, CheckCircle, Zap } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
+import { saveOrganization } from '@/lib/store';
+import type { Org } from '@/types';
 
 export default function RegisterPage() {
   const router = useRouter();
+  const [selectedPlan, setSelectedPlan] = useState<'pro' | 'business' | null>(null);
   const [companyName, setCompanyName] = useState('');
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
@@ -15,6 +18,16 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const p = params.get('plan');
+      if (p === 'pro' || p === 'business') {
+        setSelectedPlan(p);
+      }
+    }
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,37 +41,69 @@ export default function RegisterPage() {
         return;
       }
 
+      // Guardar la organización de forma que esté inmediatamente disponible y vinculada
+      const orgId = `org_${Date.now()}`;
+      const newOrg: Org = {
+        id: orgId,
+        name: companyName.trim(),
+        legal_name: companyName.trim(),
+        tax_id: '',
+        email: email.trim(),
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      };
+      saveOrganization(newOrg);
+
       const supabase = createClient();
-      if (!supabase) {
-        // En modo local sin backend de Supabase
-        router.push('/dashboard');
-        return;
-      }
-
-      const { data, error: signUpError } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            full_name: fullName,
-            company_name: companyName,
+      if (supabase) {
+        const { data, error: signUpError } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            data: {
+              full_name: fullName,
+              company_name: companyName,
+              selected_plan: selectedPlan || 'free',
+            },
           },
-        },
-      });
+        });
 
-      if (signUpError) {
-        setError(signUpError.message);
-        return;
+        if (signUpError) {
+          setError(signUpError.message);
+          return;
+        }
+
+        // Si requiere confirmación por correo y no hay sesión activa aún ni plan seleccionado
+        if (!data.session && !selectedPlan) {
+          setSuccess(true);
+          return;
+        }
       }
 
-      if (data.session) {
-        // Sesión iniciada automáticamente
-        router.push('/dashboard');
-        router.refresh();
-      } else {
-        // Requiere confirmación por correo
-        setSuccess(true);
+      // Si seleccionó un plan de pago (pro o business), asociarlo directamente a Stripe
+      if (selectedPlan) {
+        try {
+          const res = await fetch('/api/stripe/checkout', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              plan: selectedPlan,
+              org_id: orgId,
+              customer_email: email.trim(),
+            }),
+          });
+          const checkoutData = await res.json();
+          if (checkoutData?.url) {
+            window.location.href = checkoutData.url;
+            return;
+          }
+        } catch (checkoutErr) {
+          console.warn('Error al iniciar checkout tras registro:', checkoutErr);
+        }
       }
+
+      router.push('/dashboard');
+      router.refresh();
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Error inesperado al registrar la organización.');
     } finally {
@@ -78,7 +123,7 @@ export default function RegisterPage() {
           Haga clic en el enlace para activar su cuenta y comenzar a configurar su empresa.
         </p>
         <Link
-          href="/login"
+          href={selectedPlan ? `/login?plan=${selectedPlan}` : '/login'}
           className="inline-flex items-center justify-center px-4 py-2 bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-200 rounded-xl transition-colors"
         >
           Volver a iniciar sesión
@@ -95,6 +140,27 @@ export default function RegisterPage() {
           Cree su entorno corporativo seguro para emitir presupuestos y facturas
         </p>
       </div>
+
+      {selectedPlan && (
+        <div className="mb-6 p-4 rounded-2xl bg-indigo-500/15 border border-indigo-500/30 flex items-center justify-between shadow-sm">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-bold">
+              <Zap size={18} />
+            </div>
+            <div>
+              <p className="text-xs font-bold text-white">
+                Plan Seleccionado: {selectedPlan === 'pro' ? 'Profesional (19 € / mes)' : 'Empresa (49 € / mes)'}
+              </p>
+              <p className="text-[11px] text-indigo-300/80">
+                Tu suscripción quedará vinculada permanentemente a esta cuenta.
+              </p>
+            </div>
+          </div>
+          <span className="text-[10px] font-mono font-bold uppercase tracking-wider bg-indigo-500/20 text-indigo-300 px-2.5 py-1 rounded-full border border-indigo-500/30">
+            Paso 1: Registro
+          </span>
+        </div>
+      )}
 
       {error && (
         <div className="mb-5 p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs flex items-start gap-2.5">
@@ -188,12 +254,18 @@ export default function RegisterPage() {
         <button
           type="submit"
           disabled={loading}
-          className="w-full mt-3 py-2.5 px-4 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-semibold rounded-xl shadow-lg shadow-blue-600/20 flex items-center justify-center gap-2 transition-all cursor-pointer"
+          className="w-full mt-3 py-3 px-4 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-bold rounded-xl shadow-lg shadow-indigo-600/25 flex items-center justify-center gap-2 transition-all cursor-pointer"
         >
           {loading ? (
             <>
               <Loader2 className="w-4 h-4 animate-spin" />
-              <span>Creando organización…</span>
+              <span>{selectedPlan ? 'Vinculando con Stripe…' : 'Creando organización…'}</span>
+            </>
+          ) : selectedPlan ? (
+            <>
+              <Zap size={16} />
+              <span>Crear cuenta y proceder al pago seguro</span>
+              <ArrowRight className="w-4 h-4" />
             </>
           ) : (
             <>
@@ -207,8 +279,11 @@ export default function RegisterPage() {
       <div className="mt-6 pt-5 border-t border-slate-800/80 text-center">
         <p className="text-xs text-slate-400">
           ¿Ya tiene una organización registrada?{' '}
-          <Link href="/login" className="text-blue-400 font-medium hover:text-blue-300">
-            Acceder
+          <Link
+            href={selectedPlan ? `/login?plan=${selectedPlan}` : '/login'}
+            className="text-blue-400 font-medium hover:text-blue-300"
+          >
+            {selectedPlan ? 'Acceder y continuar al pago' : 'Acceder'}
           </Link>
         </p>
       </div>

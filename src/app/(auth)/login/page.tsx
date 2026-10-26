@@ -1,17 +1,53 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Mail, Lock, ArrowRight, Loader2, AlertCircle } from 'lucide-react';
+import { Mail, Lock, ArrowRight, Loader2, AlertCircle, Zap } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 
 export default function LoginPage() {
   const router = useRouter();
+  const [selectedPlan, setSelectedPlan] = useState<'pro' | 'business' | null>(null);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const p = params.get('plan');
+      if (p === 'pro' || p === 'business') {
+        setSelectedPlan(p);
+      }
+    }
+  }, []);
+
+  const handlePostLoginRedirect = async (userEmail: string) => {
+    if (selectedPlan) {
+      try {
+        const res = await fetch('/api/stripe/checkout', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            plan: selectedPlan,
+            org_id: 'org_main',
+            customer_email: userEmail,
+          }),
+        });
+        const data = await res.json();
+        if (data.url) {
+          window.location.href = data.url;
+          return;
+        }
+      } catch (e) {
+        console.error('Error al iniciar checkout post-login:', e);
+      }
+    }
+    router.push('/dashboard');
+    router.refresh();
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -22,7 +58,7 @@ export default function LoginPage() {
       const supabase = createClient();
       if (!supabase) {
         // En modo local sin backend de Supabase
-        router.push('/dashboard');
+        await handlePostLoginRedirect(email);
         return;
       }
 
@@ -40,8 +76,7 @@ export default function LoginPage() {
         return;
       }
 
-      router.push('/dashboard');
-      router.refresh();
+      await handlePostLoginRedirect(email);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Error inesperado al iniciar sesión.');
     } finally {
@@ -57,6 +92,22 @@ export default function LoginPage() {
           Introduzca sus credenciales profesionales para acceder a su espacio de trabajo
         </p>
       </div>
+
+      {selectedPlan && (
+        <div className="mb-5 p-3.5 rounded-xl bg-gradient-to-r from-blue-900/40 via-indigo-900/40 to-slate-900 border border-blue-500/30 text-xs text-slate-200 flex items-start gap-3 shadow-lg">
+          <div className="w-8 h-8 rounded-lg bg-blue-500/20 text-blue-400 flex items-center justify-center shrink-0 mt-0.5">
+            <Zap className="w-4 h-4" />
+          </div>
+          <div>
+            <div className="font-semibold text-blue-300 flex items-center gap-1.5">
+              <span>Plan Seleccionado: {selectedPlan === 'pro' ? 'Profesional (19€/mes)' : 'Empresa (49€/mes)'}</span>
+            </div>
+            <p className="text-[11px] text-slate-400 mt-0.5 leading-relaxed">
+              Inicia sesión con tu cuenta para vincular tu suscripción y acceder de inmediato tras el pago seguro.
+            </p>
+          </div>
+        </div>
+      )}
 
       {error && (
         <div className="mb-5 p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs flex items-start gap-2.5">
@@ -157,7 +208,10 @@ export default function LoginPage() {
       <div className="mt-6 pt-5 border-t border-slate-800/80 text-center">
         <p className="text-xs text-slate-400">
           ¿No dispone de cuenta corporativa?{' '}
-          <Link href="/registro" className="text-indigo-400 font-semibold hover:text-indigo-300">
+          <Link
+            href={selectedPlan ? `/registro?plan=${selectedPlan}` : '/registro'}
+            className="text-indigo-400 font-semibold hover:text-indigo-300"
+          >
             Crear organización gratis
           </Link>
         </p>
