@@ -30,9 +30,13 @@ import {
   ChevronLeft,
   ChevronRight,
   AlertCircle,
+  Truck,
+  FileCheck2,
+  Receipt,
+  X,
 } from 'lucide-react';
 
-type FilterType = 'all' | 'quote' | 'delivery_note' | 'proforma';
+type FilterType = 'all' | 'quote' | 'delivery_note' | 'proforma' | 'invoice';
 type FilterStatus = 'all' | 'draft' | 'sent' | 'viewed' | 'accepted' | 'rejected' | 'invoiced';
 
 export default function DocumentsPage() {
@@ -45,6 +49,16 @@ export default function DocumentsPage() {
   const [loadError, setLoadError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 10;
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const t = params.get('type') as FilterType | null;
+      if (t && ['quote', 'delivery_note', 'proforma', 'invoice'].includes(t)) {
+        setTypeFilter(t);
+      }
+    }
+  }, []);
 
   const loadData = async () => {
     setLoading(true);
@@ -109,7 +123,7 @@ export default function DocumentsPage() {
 
   return (
     <AppLayout>
-      <div className="p-5 md:p-8 max-w-[1440px] mx-auto space-y-6 animate-fade-in">
+      <div className="p-4 sm:p-6 md:p-8 max-w-[1440px] mx-auto space-y-6 animate-fade-in">
         {/* Cabecera */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
@@ -123,7 +137,7 @@ export default function DocumentsPage() {
               Gestión de Documentos
             </h1>
             <p className="text-xs md:text-sm text-gray-400 mt-1">
-              Presupuestos técnicos, albaranes de entrega de obra y facturas proforma con validez jurídica.
+              Presupuestos técnicos, albaranes de entrega de obra y facturas con validez jurídica.
             </p>
           </div>
 
@@ -135,42 +149,84 @@ export default function DocumentsPage() {
           </div>
         </div>
 
+        {/* Pestañas de Sección por Tipo de Documento */}
+        <div className="flex items-center gap-2 p-1.5 bg-[var(--bg-surface)] border border-white/10 rounded-2xl overflow-x-auto no-scrollbar shadow-sm">
+          {[
+            { id: 'all', label: 'Todos', icon: FileText, count: docs.length },
+            { id: 'quote', label: 'Presupuestos', icon: FileText, count: docs.filter(d => d.doc_type === 'quote').length },
+            { id: 'delivery_note', label: 'Albaranes', icon: Truck, count: docs.filter(d => d.doc_type === 'delivery_note').length },
+            { id: 'proforma', label: 'Proformas', icon: FileCheck2, count: docs.filter(d => d.doc_type === 'proforma').length },
+            { id: 'invoice', label: 'Facturas', icon: Receipt, count: docs.filter(d => d.doc_type === 'invoice').length },
+          ].map((tab) => {
+            const Icon = tab.icon;
+            const isSelected = typeFilter === tab.id;
+            return (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => {
+                  setTypeFilter(tab.id as FilterType);
+                  setCurrentPage(1);
+                }}
+                className={`flex items-center gap-2 px-3.5 py-2.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer shrink-0 ${
+                  isSelected
+                    ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30 font-bold'
+                    : 'text-gray-400 hover:text-white hover:bg-white/5'
+                }`}
+              >
+                <Icon size={15} />
+                <span>{tab.label}</span>
+                <span
+                  className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold ${
+                    isSelected ? 'bg-white/20 text-white' : 'bg-white/5 text-gray-400'
+                  }`}
+                >
+                  {tab.count}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+
         {/* Barra de Filtros y Búsqueda */}
         <div className="card-static p-4 bg-[var(--bg-surface)] border border-white/10 rounded-2xl">
-          <div className="flex flex-col lg:flex-row gap-3">
-            {/* Buscador */}
+          <div className="flex flex-col sm:flex-row gap-3">
+            {/* Buscador con lupa perfectamente centrada */}
             <div className="relative flex-1">
-              <Search
-                size={16}
-                className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400"
-              />
+              <div className="input-icon-left">
+                <Search size={16} />
+              </div>
               <input
                 type="text"
                 placeholder="Buscar por código de serie, título de obra, cliente o CIF..."
-                className="input pl-10 bg-white/[0.03] border-white/10 text-sm"
+                className="input pl-10 bg-white/[0.03] border-white/10 text-sm w-full"
                 value={search}
-                onChange={(e) => setSearch(e.target.value)}
+                onChange={(e) => {
+                  setSearch(e.target.value);
+                  setCurrentPage(1);
+                }}
               />
+              {search && (
+                <button
+                  type="button"
+                  onClick={() => setSearch('')}
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-white cursor-pointer"
+                  title="Limpiar búsqueda"
+                >
+                  <X size={14} />
+                </button>
+              )}
             </div>
 
-            {/* Filtro por Tipo */}
-            <div className="flex flex-wrap items-center gap-2">
-              <select
-                value={typeFilter}
-                onChange={(e) => setTypeFilter(e.target.value as FilterType)}
-                className="input bg-[var(--bg-surface-2)] border-white/10 text-xs min-w-[170px]"
-              >
-                <option value="all">Todos los Tipos</option>
-                <option value="quote">Presupuestos (PRE)</option>
-                <option value="delivery_note">Albaranes (ALB)</option>
-                <option value="proforma">Facturas Proforma (PRO)</option>
-              </select>
-
-              {/* Filtro por Estado */}
+            {/* Filtro por Estado */}
+            <div className="flex items-center gap-2">
               <select
                 value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value as FilterStatus)}
-                className="input bg-[var(--bg-surface-2)] border-white/10 text-xs min-w-[160px]"
+                onChange={(e) => {
+                  setStatusFilter(e.target.value as FilterStatus);
+                  setCurrentPage(1);
+                }}
+                className="input bg-[var(--bg-surface-2)] border-white/10 text-xs min-w-[190px] w-full sm:w-auto cursor-pointer"
               >
                 <option value="all">Todos los Estados</option>
                 <option value="draft">Borrador</option>

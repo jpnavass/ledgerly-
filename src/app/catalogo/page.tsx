@@ -326,7 +326,9 @@ export default function CatalogPage() {
         {/* Barra de Filtros */}
         <div className="card-static p-4 bg-[var(--bg-surface)] border border-white/10 rounded-2xl flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1">
-            <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
+            <div className="input-icon-left">
+              <Search size={16} />
+            </div>
             <input
               type="text"
               placeholder="Buscar por concepto, descripción técnica o categoría..."

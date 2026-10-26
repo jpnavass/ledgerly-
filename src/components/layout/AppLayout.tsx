@@ -126,10 +126,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     {
       title: 'Ventas & Facturación',
       items: [
-        { href: '/documentos', label: 'Presupuestos', icon: FileText, count: docs.filter((d) => d.doc_type === 'quote').length },
-        { href: '/documentos?type=delivery_note', label: 'Albaranes', icon: Truck, count: docs.filter((d) => d.doc_type === 'delivery_note').length },
-        { href: '/documentos?type=proforma', label: 'Proformas', icon: FileCheck2, count: docs.filter((d) => d.doc_type === 'proforma').length },
-        { href: '/documentos?type=invoice', label: 'Facturas', icon: Receipt, count: docs.filter((d) => d.doc_type === 'invoice').length },
+        { href: '/documentos', label: 'Documentos y Facturación', icon: FileText, count: docs.length },
       ],
     },
     {

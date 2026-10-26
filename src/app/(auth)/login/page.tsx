@@ -71,7 +71,9 @@ export default function LoginPage() {
             Correo corporativo
           </label>
           <div className="relative">
-            <Mail className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
+            <div className="input-icon-left text-slate-500">
+              <Mail className="w-4 h-4" />
+            </div>
             <input
               id="email"
               type="email"
@@ -97,7 +99,9 @@ export default function LoginPage() {
             </Link>
           </div>
           <div className="relative">
-            <Lock className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
+            <div className="input-icon-left text-slate-500">
+              <Lock className="w-4 h-4" />
+            </div>
             <input
               id="password"
               type="password"

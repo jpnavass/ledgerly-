@@ -91,7 +91,9 @@ export default function RecoverPasswordPage() {
             Correo corporativo
           </label>
           <div className="relative">
-            <Mail className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
+            <div className="input-icon-left text-slate-500">
+              <Mail className="w-4 h-4" />
+            </div>
             <input
               id="email"
               type="email"
