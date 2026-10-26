@@ -42,13 +42,14 @@ export async function updateSession(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
   const isPublicRoute =
+    pathname === '/' ||
     pathname === '/login' ||
     pathname === '/registro' ||
     pathname === '/recuperar' ||
     pathname.startsWith('/firmar') ||
+    pathname.startsWith('/ver') ||
     pathname.startsWith('/legal') ||
-    pathname.startsWith('/api/stripe/webhook') ||
-    pathname.startsWith('/api/sign');
+    pathname.startsWith('/api/');
 
   if (!user && !isPublicRoute) {
     const url = request.nextUrl.clone();
@@ -58,7 +59,7 @@ export async function updateSession(request: NextRequest) {
 
   if (user && (pathname === '/login' || pathname === '/registro' || pathname === '/recuperar')) {
     const url = request.nextUrl.clone();
-    url.pathname = '/';
+    url.pathname = '/dashboard';
     return NextResponse.redirect(url);
   }
 

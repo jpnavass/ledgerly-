@@ -149,7 +149,7 @@ function ClientViewContent({ params }: { params: Promise<{ id: string }> }) {
             IP
           </div>
           <div>
-            <span className="text-xs font-bold text-white block">{org?.legal_name || org?.name || 'Presupuesto Express'}</span>
+            <span className="text-xs font-bold text-white block">{org?.legal_name || org?.name || 'Ledgerly'}</span>
             <span className="text-[10px] text-emerald-400 font-mono flex items-center gap-1">
               <Lock size={10} /> Canal Seguro eIDAS Cifrado 256-bit
             </span>

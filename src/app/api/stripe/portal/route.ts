@@ -1,5 +1,5 @@
 // ============================================================================
-// Endpoint Portal de Facturación Stripe — Presupuesto Express Enterprise
+// Endpoint Portal de Facturación Stripe — Ledgerly
 // ============================================================================
 
 import { NextResponse, type NextRequest } from 'next/server';
@@ -8,7 +8,7 @@ import { getStripeClient } from '@/lib/stripe';
 export async function POST(request: NextRequest) {
   try {
     const stripe = getStripeClient();
-    const body = await request.json();
+    const body = await request.json().catch(() => ({}));
     const { customer_id } = body;
 
     if (!customer_id) {
@@ -18,11 +18,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const appUrl = process.env.APP_URL || 'http://localhost:3000';
+    const host = request.headers.get('x-forwarded-host') || request.headers.get('host');
+    const proto = request.headers.get('x-forwarded-proto') || (host?.includes('localhost') ? 'http' : 'https');
+    const origin = request.headers.get('origin') || (host ? `${proto}://${host}` : process.env.APP_URL || 'https://ledgerlyr.vercel.app');
 
     const session = await stripe.billingPortal.sessions.create({
       customer: customer_id,
-      return_url: `${appUrl}/ajustes`,
+      return_url: `${origin}/ajustes`,
     });
 
     return NextResponse.json({ url: session.url });
@@ -31,3 +33,4 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
+

@@ -120,7 +120,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const navSections: NavSection[] = [
     {
       items: [
-        { href: '/', label: 'Panel Principal', icon: LayoutDashboard },
+        { href: '/dashboard', label: 'Panel Principal', icon: LayoutDashboard },
       ],
     },
     {
@@ -162,7 +162,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       (d.client?.name || '').toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const orgInitial = (org?.legal_name || org?.name || 'PE').slice(0, 2).toUpperCase();
+  const orgInitial = (org?.legal_name || org?.name || 'Ledgerly').slice(0, 2).toUpperCase();
 
   return (
     <div
@@ -249,7 +249,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           {!collapsed && (
             <div className="animate-fade-in overflow-hidden">
               <h1 className="text-sm font-bold text-[var(--text-primary)] tracking-tight leading-tight truncate">
-                {org?.legal_name || org?.name || 'Presupuesto Express'}
+                {org?.legal_name || org?.name || 'Ledgerly'}
               </h1>
               <div className="flex items-center gap-1.5 mt-0.5">
                 <ShieldCheck size={12} className="text-[var(--success-fg)] flex-shrink-0" />

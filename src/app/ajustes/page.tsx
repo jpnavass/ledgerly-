@@ -134,6 +134,21 @@ export default function SettingsPage() {
   const [license, setLicense] = useState<License | null>(null);
   const [stripeLoading, setStripeLoading] = useState<string | null>(null);
   const [stripeMessage, setStripeMessage] = useState<string | null>(null);
+  const [stripeSuccess, setStripeSuccess] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const status = params.get('stripe_status');
+      if (status === 'success') {
+        setStripeSuccess('¡Pago confirmado en Stripe! Tu suscripción a Ledgerly ha sido procesada con éxito.');
+        setTab('subscription');
+      } else if (status === 'cancelled') {
+        setStripeMessage('El proceso de suscripción en Stripe fue cancelado.');
+        setTab('subscription');
+      }
+    }
+  }, []);
 
   // Estado de Miembros del Equipo
   const [members, setMembers] = useState<Membership[]>([
@@ -232,7 +247,7 @@ export default function SettingsPage() {
   const handleExportFullOrg = () => {
     const fullBackup = {
       exported_at: new Date().toISOString(),
-      system: 'Presupuesto Express Enterprise',
+      system: 'Ledgerly Enterprise',
       version: '2.0.0',
       organization: getOrganization(),
       settings: getOrgSettings(),
@@ -268,13 +283,15 @@ export default function SettingsPage() {
   const handleStripeCheckout = async (plan: 'pro' | 'business') => {
     setStripeLoading(plan);
     setStripeMessage(null);
+    setStripeSuccess(null);
     try {
+      const orgId = org?.id || 'org_ledgerly_primary';
       const res = await fetch('/api/stripe/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           plan,
-          org_id: org?.id || '',
+          org_id: orgId,
         }),
       });
 
@@ -287,7 +304,7 @@ export default function SettingsPage() {
         window.location.href = data.url;
       }
     } catch (err: unknown) {
-      setStripeMessage(err instanceof Error ? err.message : 'Error al conectar con la pasarela');
+      setStripeMessage(err instanceof Error ? err.message : 'Error al conectar con la pasarela de Stripe');
     } finally {
       setStripeLoading(null);
     }
@@ -682,6 +699,12 @@ export default function SettingsPage() {
         {/* PESTAÑA: PLAN Y LICENCIAS */}
         {tab === 'subscription' && (
           <div className="space-y-6">
+            {stripeSuccess && (
+              <div className="p-4 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-xs flex items-center gap-2 shadow-sm animate-fade-in">
+                <CheckCircle2 size={16} className="shrink-0 text-emerald-400" />
+                <span>{stripeSuccess}</span>
+              </div>
+            )}
             {stripeMessage && (
               <div className="p-4 rounded-xl bg-amber-500/15 border border-amber-500/30 text-amber-300 text-xs flex items-center gap-2">
                 <AlertCircle size={16} className="shrink-0" />

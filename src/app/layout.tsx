@@ -17,8 +17,8 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'Presupuesto Express Enterprise · Gestión de Presupuestos y Facturación',
-  description: 'Plataforma profesional de emisión de presupuestos, albaranes, facturas proforma y firma digital para empresas.',
+  title: 'Ledgerly · Gestión de Presupuestos, Facturación y Veri*factu',
+  description: 'Plataforma oficial de presupuestos, albaranes, facturación certificada Veri*factu y firma electrónica para empresas.',
 };
 
 export const instant = false;

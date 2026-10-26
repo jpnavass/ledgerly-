@@ -152,7 +152,7 @@ describe('Fase 11: Alta de Empresa, Ajustes, Importación y Portabilidad', () =>
   it('exportación completa de organización genera estructura JSON exhaustiva y auditable', () => {
     const backup = {
       exported_at: new Date().toISOString(),
-      system: 'Presupuesto Express Enterprise',
+      system: 'Ledgerly Enterprise',
       version: '2.0.0',
       organization: { legal_name: 'Empresa Test S.L.', tax_id: 'B88192034' },
       clients: [{ id: 'cli-1', name: 'Cliente Uno' }],
@@ -164,7 +164,7 @@ describe('Fase 11: Alta de Empresa, Ajustes, Importación y Portabilidad', () =>
     const serialized = JSON.stringify(backup);
     const parsed = JSON.parse(serialized);
 
-    assert.strictEqual(parsed.system, 'Presupuesto Express Enterprise');
+    assert.strictEqual(parsed.system, 'Ledgerly Enterprise');
     assert.strictEqual(parsed.version, '2.0.0');
     assert.strictEqual(parsed.organization.tax_id, 'B88192034');
     assert.strictEqual(parsed.documents.length, 1);

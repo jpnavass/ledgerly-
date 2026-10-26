@@ -21,10 +21,10 @@ export default function AuthLayout({
           </div>
           <div className="text-left">
             <span className="text-xl font-bold tracking-tight text-white block">
-              Presupuesto Express
+              Ledgerly
             </span>
             <span className="text-[11px] font-semibold uppercase tracking-wider text-blue-400 block -mt-1">
-              Enterprise
+              Cloud &amp; Veri*factu
             </span>
           </div>
         </Link>
@@ -40,7 +40,7 @@ export default function AuthLayout({
 
       {/* Pie de Página */}
       <div className="mt-8 text-center text-xs text-slate-500">
-        &copy; 2027 Presupuesto Express Enterprise · Cumplimiento Ley 11/2021 y RD 1619/2012
+        &copy; 2027 Ledgerly · Cumplimiento Ley 11/2021 y RD 1619/2012
       </div>
     </div>
   );

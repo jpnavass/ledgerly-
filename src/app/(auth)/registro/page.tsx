@@ -31,7 +31,7 @@ export default function RegisterPage() {
       const supabase = createClient();
       if (!supabase) {
         // En modo local sin backend de Supabase
-        router.push('/');
+        router.push('/dashboard');
         return;
       }
 
@@ -53,7 +53,7 @@ export default function RegisterPage() {
 
       if (data.session) {
         // Sesión iniciada automáticamente
-        router.push('/');
+        router.push('/dashboard');
         router.refresh();
       } else {
         // Requiere confirmación por correo

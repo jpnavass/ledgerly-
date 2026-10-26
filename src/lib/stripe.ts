@@ -1,5 +1,5 @@
 // ============================================================================
-// Cliente y Utilidades de Stripe — Presupuesto Express Enterprise
+// Cliente y Utilidades de Stripe — Ledgerly
 // ============================================================================
 
 import Stripe from 'stripe';

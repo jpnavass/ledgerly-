@@ -22,7 +22,7 @@ export default function LoginPage() {
       const supabase = createClient();
       if (!supabase) {
         // En modo local sin backend de Supabase
-        router.push('/');
+        router.push('/dashboard');
         return;
       }
 
@@ -40,7 +40,7 @@ export default function LoginPage() {
         return;
       }
 
-      router.push('/');
+      router.push('/dashboard');
       router.refresh();
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Error inesperado al iniciar sesión.');
