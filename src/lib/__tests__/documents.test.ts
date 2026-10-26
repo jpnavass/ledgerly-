@@ -14,7 +14,7 @@ import {
   checkDocumentExpiry,
   DocumentError,
 } from '../domain/documents.ts';
-import { InMemoryCounterManager, formatFullDocumentNumber } from '../domain/numbering.ts';
+import { InMemoryCounterManager, formatFullDocumentNumber, validateSeriesPrefix } from '../domain/numbering.ts';
 import type { Client, Org, Document, DocumentItem } from '../../types/index.ts';
 
 describe('Ciclo de Vida Documental (documents.ts)', () => {
@@ -550,5 +550,25 @@ describe('Ciclo de Vida Documental (documents.ts)', () => {
         }),
       DocumentError
     );
+  });
+
+  it('formatFullDocumentNumber, validateSeriesPrefix y InMemoryCounterManager gestionan series y numeración oficial', async () => {
+    assert.strictEqual(formatFullDocumentNumber('FAC', 5, 2027, true), 'FAC-2027-0005');
+    assert.strictEqual(formatFullDocumentNumber('PRE', 123), 'PRE-0123');
+    assert.throws(() => formatFullDocumentNumber('FAC', 0), RangeError);
+    assert.throws(() => formatFullDocumentNumber('FAC', -1), RangeError);
+
+    assert.strictEqual(validateSeriesPrefix('FAC'), true);
+    assert.strictEqual(validateSeriesPrefix('FAC_2026'), true);
+    assert.strictEqual(validateSeriesPrefix(''), false);
+    assert.strictEqual(validateSeriesPrefix('fac'), false);
+    assert.strictEqual(validateSeriesPrefix('SERIE_DEMASIADO_LARGA'), false);
+
+    const counter = new InMemoryCounterManager();
+    const n1 = await counter.nextNumber('org-1', 'invoice', 'FAC', 2026);
+    assert.strictEqual(n1, 1);
+    counter.reset();
+    const n2 = await counter.nextNumber('org-1', 'invoice', 'FAC', 2026);
+    assert.strictEqual(n2, 1);
   });
 });

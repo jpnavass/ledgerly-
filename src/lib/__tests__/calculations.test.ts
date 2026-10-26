@@ -267,4 +267,39 @@ describe('FASE 1: Motor de Cálculos Económicos y Cumplimiento Fiscal (calculat
     const lineSub = calcLineSubtotal(2, 5000, 10);
     assert.strictEqual(lineSub, 9000);
   });
+
+  it('calcLineVat, calcLineIrpf y calcLineTotal validan rangos y calculan importes oficiales', () => {
+    assert.strictEqual(calcLineVat(10000, 21), 2100);
+    assert.throws(() => calcLineVat(10000, 7), CalculationError);
+
+    assert.strictEqual(calcLineIrpf(10000, 15), 1500);
+    assert.throws(() => calcLineIrpf(10000, -1), CalculationError);
+    assert.throws(() => calcLineIrpf(10000, 101), CalculationError);
+
+    const total = calcLineTotal(2, 5000, 0, 21, 15);
+    // Subtotal: 10000, IVA 21%: 2100, IRPF 15%: 1500 -> Total: 10600
+    assert.strictEqual(total.total_cents, 10600);
+
+    assert.throws(
+      () =>
+        calcDocumentTotals([
+          { item_type: 'line', is_optional: false, quantity: 1, price_cents: 100, cost_cents: 1.5, discount_pct: 0, vat_rate: 21, irpf_rate: 0 },
+        ]),
+      CalculationError
+    );
+    assert.throws(
+      () =>
+        calcDocumentTotals([
+          { item_type: 'line', is_optional: false, quantity: 1, price_cents: 1.5, discount_pct: 0, vat_rate: 21, irpf_rate: 0 },
+        ]),
+      CalculationError
+    );
+    assert.throws(
+      () =>
+        calcDocumentTotals([
+          { item_type: 'line', is_optional: false, quantity: 1, price_cents: 100, discount_pct: 0, vat_rate: 21, irpf_rate: 150 },
+        ]),
+      CalculationError
+    );
+  });
 });

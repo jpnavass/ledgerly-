@@ -80,4 +80,18 @@ describe('FASE 1: Módulo de Aritmética Monetaria Entera (money.ts)', () => {
     assert.throws(() => formatDocNumber('FAC', 0), RangeError);
     assert.throws(() => formatDocNumber('FAC', -5), RangeError);
   });
+
+  it('assertRate y eurosToCents cubren exhaustivamente validaciones de rango y formatos con miles', () => {
+    assert.throws(() => assertRate(NaN), RangeError);
+    assert.throws(() => assertRate('20' as any), RangeError);
+    assert.throws(() => assertRate(150, { min: 0, max: 100 }), RangeError);
+    assert.throws(() => eurosToCents(Infinity), RangeError);
+    assert.throws(() => eurosToCents(null as any), TypeError);
+    assert.throws(() => eurosToCents('1234.5.6'), RangeError);
+    assert.throws(() => eurosToCents('.123'), RangeError);
+    assert.throws(() => eurosToCents('12.3456.789'), RangeError);
+    assert.strictEqual(eurosToCents('1.234.567'), 123456700);
+    assert.strictEqual(eurosToCents('10.555'), 1056);
+    assert.strictEqual(eurosToCents('10.554'), 1055);
+  });
 });
