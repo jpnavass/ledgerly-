@@ -1076,13 +1076,9 @@ export default function SettingsPage() {
               </p>
 
               <div className="pt-2">
-                <Link
-                  href="/legal/declaracion-responsable"
-                  className="btn btn-secondary btn-sm flex items-center gap-2"
-                >
-                  <ExternalLink size={14} />
-                  <span>Ver Declaración Responsable Pública</span>
-                </Link>
+                <span className="inline-flex items-center gap-2 text-xs font-mono text-amber-400 bg-amber-500/10 border border-amber-500/20 px-3 py-1.5 rounded-lg">
+                  <span>En fase de verificación técnico-legal previa a firma formal</span>
+                </span>
               </div>
             </div>
           </div>

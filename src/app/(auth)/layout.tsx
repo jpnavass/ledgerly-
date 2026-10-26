@@ -23,13 +23,13 @@ export default function AuthLayout({
             <span className="text-xl font-bold tracking-tight text-white block">
               Ledgerly
             </span>
-            <span className="text-[11px] font-semibold uppercase tracking-wider text-blue-400 block -mt-1">
-              Cloud &amp; Veri*factu
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-indigo-400 block -mt-1 font-mono">
+              Presupuestos &amp; Facturación
             </span>
           </div>
         </Link>
         <p className="mt-3 text-xs text-slate-400 max-w-sm">
-          Plataforma de facturación electrónica, presupuestación y cumplimiento legal español
+          Gestión ágil de presupuestos, facturas y albaranes para autónomos y pymes
         </p>
       </div>
 
@@ -40,7 +40,7 @@ export default function AuthLayout({
 
       {/* Pie de Página */}
       <div className="mt-8 text-center text-xs text-slate-500">
-        &copy; 2027 Ledgerly · Cumplimiento Ley 11/2021 y RD 1619/2012
+        &copy; {new Date().getFullYear()} Ledgerly
       </div>
     </div>
   );

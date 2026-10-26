@@ -4,12 +4,13 @@
 
 import { NextResponse, type NextRequest } from 'next/server';
 import { getStripeClient, STRIPE_PRICES } from '@/lib/stripe';
+import { createClient } from '@/lib/supabase/server';
 
 export async function POST(request: NextRequest) {
   try {
     const stripe = getStripeClient();
     const body = await request.json().catch(() => ({}));
-    const { plan, org_id, customer_email } = body;
+    const { plan } = body;
 
     if (!plan || (plan !== 'pro' && plan !== 'business')) {
       return NextResponse.json(
@@ -18,7 +19,31 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const orgId = org_id || 'org_ledgerly_primary';
+    // Validación estricta de sesión en servidor: obtener usuario y org desde Supabase SSR
+    let customerEmail: string | undefined;
+    let orgId: string = 'org_ledgerly_primary';
+
+    const supabase = await createClient();
+    if (supabase) {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user) {
+        return NextResponse.json(
+          { error: 'Acceso no autorizado. Inicia sesión con tu cuenta para contratar una suscripción.' },
+          { status: 401 }
+        );
+      }
+
+      customerEmail = user.email;
+      orgId = (user.user_metadata?.org_id as string) || `org_${user.id.slice(0, 8)}`;
+    } else {
+      // Modo local/offline de prueba si no hay servidor Supabase configurado
+      customerEmail = body.customer_email || undefined;
+      orgId = body.org_id || 'org_ledgerly_local';
+    }
+
     const planKey = plan as 'pro' | 'business';
     const envPriceId = STRIPE_PRICES[planKey];
 
@@ -50,7 +75,7 @@ export async function POST(request: NextRequest) {
     const session = await stripe.checkout.sessions.create({
       mode: 'subscription',
       line_items: [lineItem],
-      customer_email: customer_email || undefined,
+      customer_email: customerEmail || undefined,
       client_reference_id: orgId,
       metadata: {
         org_id: orgId,

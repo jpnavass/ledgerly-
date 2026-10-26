@@ -117,16 +117,16 @@ export default function RegisterPage() {
         <div className="w-12 h-12 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 rounded-full flex items-center justify-center mx-auto mb-4">
           <CheckCircle className="w-6 h-6" />
         </div>
-        <h2 className="text-lg font-bold text-white mb-2">Verifique su correo electrónico</h2>
+        <h2 className="text-lg font-bold text-white mb-2">Revisa tu correo electrónico</h2>
         <p className="text-xs text-slate-400 leading-relaxed mb-6">
-          Hemos enviado un enlace de confirmación a <strong className="text-slate-200">{email}</strong>.
-          Haga clic en el enlace para activar su cuenta y comenzar a configurar su empresa.
+          Te hemos enviado un enlace de confirmación a <strong className="text-slate-200">{email}</strong>.
+          Haz clic en el enlace para activar tu cuenta y acceder a tu panel de gestión.
         </p>
         <Link
           href={selectedPlan ? `/login?plan=${selectedPlan}` : '/login'}
           className="inline-flex items-center justify-center px-4 py-2 bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-200 rounded-xl transition-colors"
         >
-          Volver a iniciar sesión
+          Ir a iniciar sesión
         </Link>
       </div>
     );
@@ -135,9 +135,9 @@ export default function RegisterPage() {
   return (
     <div>
       <div className="mb-6">
-        <h1 className="text-xl font-bold text-white tracking-tight">Alta de organización</h1>
+        <h1 className="text-xl font-bold text-white tracking-tight">Crea tu cuenta</h1>
         <p className="text-xs text-slate-400 mt-1">
-          Cree su entorno corporativo seguro para emitir presupuestos y facturas
+          Configura tu espacio para gestionar presupuestos, facturas y albaranes
         </p>
       </div>
 
@@ -172,7 +172,7 @@ export default function RegisterPage() {
       <form onSubmit={handleSubmit} className="space-y-3.5">
         <div>
           <label className="block text-xs font-medium text-slate-300 mb-1" htmlFor="companyName">
-            Nombre de la empresa o razón social
+            Tu empresa o nombre comercial
           </label>
           <div className="relative">
             <div className="input-icon-left text-slate-500">
@@ -184,7 +184,7 @@ export default function RegisterPage() {
               required
               value={companyName}
               onChange={(e) => setCompanyName(e.target.value)}
-              placeholder="Construcciones y Reformas S.L."
+              placeholder="Ej. Reformas y Montajes García"
               className="w-full pl-10 pr-4 py-2.5 bg-slate-900/60 border border-slate-800 rounded-xl text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
             />
           </div>
@@ -192,7 +192,7 @@ export default function RegisterPage() {
 
         <div>
           <label className="block text-xs font-medium text-slate-300 mb-1" htmlFor="fullName">
-            Nombre del administrador / responsable
+            Tu nombre completo
           </label>
           <div className="relative">
             <div className="input-icon-left text-slate-500">
@@ -204,7 +204,7 @@ export default function RegisterPage() {
               required
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
-              placeholder="Juan Pérez Martínez"
+              placeholder="Juan García Martínez"
               className="w-full pl-10 pr-4 py-2.5 bg-slate-900/60 border border-slate-800 rounded-xl text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
             />
           </div>
@@ -212,7 +212,7 @@ export default function RegisterPage() {
 
         <div>
           <label className="block text-xs font-medium text-slate-300 mb-1" htmlFor="email">
-            Correo corporativo
+            Tu correo electrónico
           </label>
           <div className="relative">
             <div className="input-icon-left text-slate-500">
@@ -224,7 +224,7 @@ export default function RegisterPage() {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="direccion@empresa.es"
+              placeholder="tu@email.com"
               className="w-full pl-10 pr-4 py-2.5 bg-slate-900/60 border border-slate-800 rounded-xl text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
             />
           </div>
@@ -232,7 +232,7 @@ export default function RegisterPage() {
 
         <div>
           <label className="block text-xs font-medium text-slate-300 mb-1" htmlFor="password">
-            Contraseña de acceso (mín. 8 caracteres)
+            Tu contraseña (mínimo 8 caracteres)
           </label>
           <div className="relative">
             <div className="input-icon-left text-slate-500">
@@ -251,6 +251,31 @@ export default function RegisterPage() {
           </div>
         </div>
 
+        {/* Checkbox obligatorio de aceptación legal */}
+        <div className="flex items-start gap-2.5 pt-1 text-xs text-slate-300">
+          <input
+            id="terms"
+            type="checkbox"
+            required
+            className="w-4 h-4 mt-0.5 rounded text-indigo-600 bg-slate-900 border-slate-700 focus:ring-0 cursor-pointer"
+          />
+          <label htmlFor="terms" className="leading-tight text-[11px] text-slate-400">
+            He leído y acepto el{' '}
+            <Link href="/legal/aviso-legal" target="_blank" className="text-indigo-400 hover:underline">
+              Aviso Legal
+            </Link>
+            , la{' '}
+            <Link href="/legal/privacidad" target="_blank" className="text-indigo-400 hover:underline">
+              Política de Privacidad
+            </Link>{' '}
+            y las{' '}
+            <Link href="/legal/terminos" target="_blank" className="text-indigo-400 hover:underline">
+              Condiciones de Contratación
+            </Link>
+            .
+          </label>
+        </div>
+
         <button
           type="submit"
           disabled={loading}
@@ -259,7 +284,7 @@ export default function RegisterPage() {
           {loading ? (
             <>
               <Loader2 className="w-4 h-4 animate-spin" />
-              <span>{selectedPlan ? 'Vinculando con Stripe…' : 'Creando organización…'}</span>
+              <span>{selectedPlan ? 'Preparando cuenta…' : 'Creando tu cuenta…'}</span>
             </>
           ) : selectedPlan ? (
             <>
@@ -269,7 +294,7 @@ export default function RegisterPage() {
             </>
           ) : (
             <>
-              <span>Registrar Organización</span>
+              <span>Crear cuenta gratis</span>
               <ArrowRight className="w-4 h-4" />
             </>
           )}
@@ -278,12 +303,12 @@ export default function RegisterPage() {
 
       <div className="mt-6 pt-5 border-t border-slate-800/80 text-center">
         <p className="text-xs text-slate-400">
-          ¿Ya tiene una organización registrada?{' '}
+          ¿Ya tienes una cuenta registrada?{' '}
           <Link
             href={selectedPlan ? `/login?plan=${selectedPlan}` : '/login'}
-            className="text-blue-400 font-medium hover:text-blue-300"
+            className="text-indigo-400 font-semibold hover:text-indigo-300"
           >
-            {selectedPlan ? 'Acceder y continuar al pago' : 'Acceder'}
+            Acceder y continuar
           </Link>
         </p>
       </div>

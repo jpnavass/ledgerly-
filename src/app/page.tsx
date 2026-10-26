@@ -78,7 +78,7 @@ export default function LandingPortalPage() {
       unitPrice: 380,
       qty: 1,
       unit: 'partida',
-      included: false,
+      included: true,
     },
   ]);
 
@@ -175,28 +175,28 @@ export default function LandingPortalPage() {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const faqs = [
     {
-      q: '¿Cumple Ledgerly con la nueva normativa Veri*factu y la Ley Antifraude 11/2021?',
-      a: 'Sí, al 100%. Ledgerly implementa encadenamiento criptográfico SHA-256 inviolable (cada factura firma la anterior), huellas digitales verificables, generación oficial de códigos QR según el Real Decreto 1007/2023 y registro inalterable append-only.',
+      q: '¿Está Ledgerly preparado para la normativa Veri*factu y la Ley Antifraude 11/2021?',
+      a: 'Sí. Ledgerly está diseñado para cumplir con los requisitos del Real Decreto 1007/2023: incorpora encadenamiento criptográfico SHA-256 de facturación (cada registro encadena el anterior), generación de código QR con especificaciones de la AEAT y registro inalterable append-only.',
     },
     {
-      q: '¿Cómo funciona la firma digital del cliente? ¿Tiene validez jurídica?',
-      a: 'Totalmente. Cada presupuesto tiene un enlace público cifrado único. El cliente recibe un código OTP seguro por SMS o correo y firma en pantalla. Se registra su dirección IP, agente de usuario y sello de tiempo conforme al Reglamento Europeo eIDAS.',
+      q: '¿Cómo funciona la firma digital del cliente?',
+      a: 'Cada presupuesto dispone de un enlace público cifrado para tu cliente. El cliente puede revisar las partidas, aceptar las condiciones y firmar directamente en pantalla desde su móvil o tablet, registrándose su IP y fecha como evidencia electrónica simple.',
     },
     {
       q: '¿Puedo usarlo desde la furgoneta o en la obra con el móvil?',
-      a: 'Exactamente para eso está diseñado. La interfaz es completamente responsive, ultrarrápida y táctil. Puedes preparar un presupuesto en 30 segundos de pie junto al cliente y enviárselo por WhatsApp antes de arrancar la furgoneta.',
+      a: 'Exactamente para eso está diseñado. La interfaz es completamente táctil, rápida y adaptada a móviles. Puedes preparar un presupuesto en un minuto junto al cliente y enviárselo al instante antes de marcharte de la obra.',
     },
     {
       q: '¿Qué ocurre si ya tengo clientes y tarifas creadas?',
-      a: 'Dispones de un catálogo inteligente de partidas reutilizables y gestión de clientes. También puedes importar y exportar todos tus datos en JSON en cualquier momento conforme al artículo 20 del RGPD.',
+      a: 'Dispones de un catálogo inteligente de partidas reutilizables y gestión de clientes. También puedes importar y exportar todos tus datos en JSON en cualquier momento conforme al RGPD.',
     },
     {
       q: '¿Hay permanencia en los planes de pago?',
-      a: 'Ninguna permanencia. Puedes suscribirte mensualmente y cancelar con un solo clic desde tu panel o el portal de Stripe cuando desees.',
+      a: 'Ninguna permanencia. Las suscripciones son mensuales y puedes cancelar en cualquier momento con un solo clic desde tu panel de control.',
     },
     {
-      q: '¿Quién está detrás de Ledgerly?',
-      a: 'Desarrollado y operado en Málaga por Ledgerly (NIF 77685568D, Horacio Lengo 18). Soporte técnico directo y cercano por WhatsApp (+34 711 22 34 52) y correo electrónico.',
+      q: '¿Cómo puedo obtener soporte o resolver dudas?',
+      a: 'Dispones de atención por correo electrónico (presupuestoxpress@gmail.com) y asistencia técnica directa para ayudarte en la configuración de tus plantillas y documentos.',
     },
   ];
 
@@ -218,7 +218,7 @@ export default function LandingPortalPage() {
                 Ledgerly
               </span>
               <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-400 block -mt-1 font-mono">
-                Facturación &amp; Veri*factu
+                Presupuestos &amp; Facturación
               </span>
             </div>
           </Link>
@@ -317,11 +317,11 @@ export default function LandingPortalPage() {
                 </div>
                 <div className="flex items-center gap-1.5">
                   <CheckCircle2 size={15} className="text-emerald-400" />
-                  <span>Firma legal eIDAS</span>
+                  <span>Firma electrónica simple</span>
                 </div>
                 <div className="flex items-center gap-1.5">
                   <CheckCircle2 size={15} className="text-emerald-400" />
-                  <span>Homologado Veri*factu</span>
+                  <span>Preparado para Veri*factu (RD 1007/2023)</span>
                 </div>
               </div>
             </div>
@@ -346,8 +346,8 @@ export default function LandingPortalPage() {
                   {demoItems.map((item) => (
                     <div
                       key={item.id}
-                      className={`pt-2 flex items-center justify-between gap-3 transition-opacity ${
-                        item.included ? 'opacity-100' : 'opacity-40'
+                      className={`pt-2 flex items-center justify-between gap-3 transition-all ${
+                        item.included ? 'opacity-100' : 'opacity-50 bg-slate-900/40 rounded-lg px-2'
                       }`}
                     >
                       <div className="flex items-center gap-3 flex-1 min-w-0">
@@ -358,8 +358,21 @@ export default function LandingPortalPage() {
                           className="w-4 h-4 rounded text-indigo-600 bg-slate-800 border-slate-700 focus:ring-0 cursor-pointer"
                         />
                         <div className="truncate">
-                          <p className="text-xs font-semibold text-slate-200 truncate">{item.name}</p>
-                          <p className="text-[10px] text-slate-400 font-mono">
+                          <div className="flex items-center gap-2">
+                            <p
+                              className={`text-xs font-semibold truncate ${
+                                item.included ? 'text-slate-200' : 'text-slate-400 line-through'
+                              }`}
+                            >
+                              {item.name}
+                            </p>
+                            {!item.included && (
+                              <span className="text-[9px] font-mono px-1.5 py-0.2 bg-rose-500/20 text-rose-300 border border-rose-500/30 rounded shrink-0">
+                                Desmarcada (no suma)
+                              </span>
+                            )}
+                          </div>
+                          <p className={`text-[10px] font-mono ${item.included ? 'text-slate-400' : 'text-slate-500 line-through'}`}>
                             {formatEur(item.unitPrice)} / {item.unit}
                           </p>
                         </div>
@@ -392,26 +405,28 @@ export default function LandingPortalPage() {
                 </div>
 
                 {/* Toggles de Impuestos */}
-                <div className="flex items-center gap-2 my-4 pt-2 border-t border-slate-800">
+                <div className="flex flex-wrap items-center gap-2 my-4 pt-2 border-t border-slate-800">
                   <button
                     onClick={() => setApplyVat(!applyVat)}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
                       applyVat
-                        ? 'bg-indigo-600 text-white'
+                        ? 'bg-indigo-600 text-white shadow'
                         : 'bg-slate-800 text-slate-400 border border-slate-700'
                     }`}
                   >
-                    IVA 21 %
+                    <span>IVA 21 %</span>
+                    <span className="text-[10px] opacity-80">{applyVat ? '(Aplicado)' : '(Desactivado)'}</span>
                   </button>
                   <button
                     onClick={() => setApplyIrpf(!applyIrpf)}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
                       applyIrpf
-                        ? 'bg-indigo-600 text-white'
+                        ? 'bg-indigo-600 text-white shadow'
                         : 'bg-slate-800 text-slate-400 border border-slate-700'
                     }`}
                   >
-                    Retención IRPF 15 %
+                    <span>Retención IRPF 15 %</span>
+                    <span className="text-[10px] opacity-80">{applyIrpf ? '(Aplicada -15%)' : '(Desactivada)'}</span>
                   </button>
                 </div>
 
@@ -434,7 +449,7 @@ export default function LandingPortalPage() {
                     </div>
                   )}
                   <div className="flex justify-between text-base font-bold text-white pt-2 border-t border-slate-800">
-                    <span className="font-sans">Total Oficial:</span>
+                    <span className="font-sans">Total Presupuesto:</span>
                     <span className="text-emerald-400 font-mono">{formatEur(demoTotals.total)}</span>
                   </div>
                 </div>
@@ -476,16 +491,16 @@ export default function LandingPortalPage() {
               <p className="text-xs text-slate-400 mt-1 font-medium">Por presupuesto en obra</p>
             </div>
             <div>
-              <p className="text-3xl md:text-4xl font-black text-emerald-400 font-mono">100%</p>
-              <p className="text-xs text-slate-400 mt-1 font-medium">Conforme Veri*factu y Ley 11/2021</p>
+              <p className="text-3xl md:text-4xl font-black text-emerald-400 font-mono">RD 1007</p>
+              <p className="text-xs text-slate-400 mt-1 font-medium">Preparado para Veri*factu</p>
             </div>
             <div>
               <p className="text-3xl md:text-4xl font-black text-purple-400 font-mono">0 €</p>
               <p className="text-xs text-slate-400 mt-1 font-medium">Para comenzar a emitir</p>
             </div>
             <div>
-              <p className="text-3xl md:text-4xl font-black text-blue-400 font-mono">eIDAS</p>
-              <p className="text-xs text-slate-400 mt-1 font-medium">Firma legal con sello de tiempo</p>
+              <p className="text-3xl md:text-4xl font-black text-blue-400 font-mono">Evidencias</p>
+              <p className="text-xs text-slate-400 mt-1 font-medium">Firma electrónica con registro de IP</p>
             </div>
           </div>
         </div>
@@ -839,11 +854,11 @@ export default function LandingPortalPage() {
                   </li>
                   <li className="flex items-center gap-2">
                     <Check size={14} className="text-emerald-400 shrink-0" />
-                    <span>Hasta 25 usuarios concurrentes</span>
+                    <span>Hasta 25 usuarios de equipo</span>
                   </li>
                   <li className="flex items-center gap-2">
                     <Check size={14} className="text-emerald-400 shrink-0" />
-                    <span>Integración Veri*factu telemática</span>
+                    <span>Gestión multi-serie y departamentos</span>
                   </li>
                   <li className="flex items-center gap-2">
                     <Check size={14} className="text-emerald-400 shrink-0" />
@@ -952,32 +967,34 @@ export default function LandingPortalPage() {
                 <ShieldCheck size={16} />
               </div>
               <span className="font-bold text-white text-sm">Ledgerly</span>
-              <span>· Soluciones oficiales de facturación y presupuestos</span>
+              <span>· Presupuestos y facturación ágil para autónomos y pymes</span>
             </div>
 
             <div className="flex flex-wrap items-center gap-4 text-slate-400">
-              <a href="tel:+34711223452" className="hover:text-white transition-colors">
-                +34 711 22 34 52
-              </a>
-              <span>·</span>
               <a href="mailto:presupuestoxpress@gmail.com" className="hover:text-white transition-colors">
                 presupuestoxpress@gmail.com
               </a>
               <span>·</span>
-              <span>Horacio Lengo 18, Málaga (NIF 77685568D)</span>
+              <span>Málaga, España</span>
             </div>
           </div>
 
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-6 border-t border-slate-900 text-[11px]">
             <p>
-              &copy; {new Date().getFullYear()} Ledgerly. Conforme a la Ley 11/2021 de medidas de prevención contra el fraude fiscal y Real Decreto 1619/2012.
+              &copy; {new Date().getFullYear()} Ledgerly. Diseñado conforme a la Ley 11/2021 de medidas contra el fraude fiscal y Real Decreto 1619/2012.
             </p>
-            <div className="flex items-center gap-4">
-              <Link
-                href="/legal/declaracion-responsable"
-                className="text-indigo-400 hover:text-indigo-300 font-semibold"
-              >
-                Declaración Responsable del Productor
+            <div className="flex flex-wrap items-center gap-4 text-slate-400">
+              <Link href="/legal/aviso-legal" className="hover:text-indigo-400 transition-colors">
+                Aviso Legal
+              </Link>
+              <Link href="/legal/privacidad" className="hover:text-indigo-400 transition-colors">
+                Política de Privacidad
+              </Link>
+              <Link href="/legal/cookies" className="hover:text-indigo-400 transition-colors">
+                Cookies
+              </Link>
+              <Link href="/legal/terminos" className="hover:text-indigo-400 transition-colors">
+                Condiciones de Contratación
               </Link>
             </div>
           </div>

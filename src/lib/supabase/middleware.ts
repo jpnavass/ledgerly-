@@ -51,8 +51,7 @@ export async function updateSession(request: NextRequest) {
     pathname.startsWith('/legal') ||
     pathname.startsWith('/api/');
 
-  const hasGuestAccess = request.cookies.get('pe_guest_session')?.value === 'true';
-  const hasAccess = Boolean(user || hasGuestAccess);
+  const hasAccess = Boolean(user);
 
   if (!hasAccess && !isPublicRoute) {
     const url = request.nextUrl.clone();

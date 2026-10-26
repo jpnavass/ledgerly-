@@ -17,8 +17,8 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'Ledgerly · Gestión de Presupuestos, Facturación y Veri*factu',
-  description: 'Plataforma oficial de presupuestos, albaranes, facturación certificada Veri*factu y firma electrónica para empresas.',
+  title: 'Ledgerly · Gestión de Presupuestos y Facturación',
+  description: 'Presupuestos rápidos, albaranes y facturación profesional diseñada conforme a la normativa española y Veri*factu.',
 };
 
 export const instant = false;

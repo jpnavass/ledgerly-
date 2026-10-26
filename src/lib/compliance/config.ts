@@ -32,8 +32,8 @@ export const COMPLIANCE_CONFIG: ComplianceConfig = {
     official_reference: 'Real Decreto 1007/2023 y Orden HAC/1177/2024',
   },
   producer: {
-    name: process.env.SOFTWARE_PRODUCER_NAME || 'Ledgerly',
-    tax_id: process.env.SOFTWARE_PRODUCER_TAX_ID || '77685568D',
+    name: process.env.SOFTWARE_PRODUCER_NAME || 'Ledgerly Technologies',
+    tax_id: process.env.SOFTWARE_PRODUCER_TAX_ID || '',
     software_name: 'Ledgerly',
     software_version: '2.0.0',
     declaration_date: '2026-10-26',
