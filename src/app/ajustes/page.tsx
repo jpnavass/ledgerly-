@@ -45,6 +45,7 @@ import {
   Sun,
   Moon,
   Laptop,
+  X,
 } from 'lucide-react';
 import { type ThemeMode, type AccentId, type ThemeDensity, type UiPreferences, DEFAULT_UI_PREFERENCES } from '@/lib/theme/types';
 import { parseUiCookie, serializeUiCookie, UI_COOKIE_NAME } from '@/lib/theme/cookie';
@@ -437,7 +438,7 @@ export default function SettingsPage() {
         )}
 
         {/* Pestañas de Ajustes */}
-        <div className="flex border-b border-white/10 gap-2 text-xs font-medium">
+        <div className="flex border-b border-white/10 gap-2 text-xs font-medium overflow-x-auto pb-px flex-nowrap scrollbar-none">
           <button
             onClick={() => setTab('fiscal')}
             className={`pb-3 px-3 transition-colors cursor-pointer flex items-center gap-2 border-b-2 ${
@@ -700,33 +701,51 @@ export default function SettingsPage() {
         {tab === 'subscription' && (
           <div className="space-y-6">
             {stripeSuccess && (
-              <div className="p-4 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-xs flex items-center gap-2 shadow-sm animate-fade-in">
-                <CheckCircle2 size={16} className="shrink-0 text-emerald-400" />
-                <span>{stripeSuccess}</span>
+              <div className="p-4 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-xs flex items-center justify-between gap-3 shadow-sm animate-fade-in">
+                <div className="flex items-center gap-2.5">
+                  <CheckCircle2 size={18} className="shrink-0 text-emerald-400" />
+                  <span>{stripeSuccess}</span>
+                </div>
+                <button
+                  onClick={() => setStripeSuccess(null)}
+                  className="p-1 text-emerald-400 hover:text-white transition-colors cursor-pointer"
+                  aria-label="Cerrar aviso"
+                >
+                  <X size={15} />
+                </button>
               </div>
             )}
             {stripeMessage && (
-              <div className="p-4 rounded-xl bg-amber-500/15 border border-amber-500/30 text-amber-300 text-xs flex items-center gap-2">
-                <AlertCircle size={16} className="shrink-0" />
-                <span>{stripeMessage}</span>
+              <div className="p-4 rounded-2xl bg-amber-500/15 border border-amber-500/30 text-amber-300 text-xs flex items-center justify-between gap-3 animate-fade-in">
+                <div className="flex items-center gap-2.5">
+                  <AlertCircle size={18} className="shrink-0 text-amber-400" />
+                  <span>{stripeMessage}</span>
+                </div>
+                <button
+                  onClick={() => setStripeMessage(null)}
+                  className="p-1 text-amber-400 hover:text-white transition-colors cursor-pointer"
+                  aria-label="Cerrar aviso"
+                >
+                  <X size={15} />
+                </button>
               </div>
             )}
 
             {/* Tarjeta de Estado Actual */}
-            <div className="p-6 rounded-2xl bg-[var(--bg-surface)] border border-white/10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div className="p-6 sm:p-8 rounded-3xl bg-[var(--bg-surface)] border border-white/10 flex flex-col md:flex-row md:items-center justify-between gap-6 shadow-xl">
               <div className="flex items-start gap-4">
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white shadow-lg shadow-indigo-500/30 shrink-0">
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white shadow-lg shadow-indigo-500/30 shrink-0">
                   <Shield size={24} />
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
-                    <h3 className="font-bold text-white text-lg">{activePlanInfo.def.name}</h3>
-                    <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-bold uppercase">
+                    <h3 className="font-extrabold text-white text-lg">{activePlanInfo.def.name}</h3>
+                    <span className="text-[10px] font-mono px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-bold uppercase">
                       {license?.is_active ? 'Activa' : 'Gratuito'}
                     </span>
                   </div>
-                  <p className="text-xs text-gray-400 mt-1">
-                    Límite mensual: {activePlanInfo.def.max_docs_per_month === -1 ? 'Ilimitado' : `${activePlanInfo.def.max_docs_per_month} documentos`} · Hasta {activePlanInfo.def.max_users} usuario(s)
+                  <p className="text-xs text-gray-400 mt-1.5 leading-relaxed">
+                    Límite mensual: {activePlanInfo.def.max_docs_per_month === -1 ? 'Ilimitado' : `${activePlanInfo.def.max_docs_per_month} documentos`} · Hasta {activePlanInfo.def.max_users} usuario(s) concurrente(s)
                   </p>
                 </div>
               </div>
@@ -750,30 +769,30 @@ export default function SettingsPage() {
             {/* Opciones de Suscripción */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Plan Pro */}
-              <div className="p-6 rounded-2xl bg-[var(--bg-surface)] border border-white/10 space-y-4 relative flex flex-col justify-between">
+              <div className="p-6 sm:p-8 rounded-3xl bg-[var(--bg-surface)] border border-white/10 space-y-6 relative flex flex-col justify-between shadow-xl">
                 <div>
                   <div className="flex justify-between items-center mb-2">
-                    <h4 className="font-bold text-white text-base">Plan Profesional</h4>
-                    <span className="text-xs font-mono font-bold text-indigo-400">19 € / mes</span>
+                    <h4 className="font-bold text-white text-lg">Plan Profesional</h4>
+                    <span className="text-sm font-mono font-black text-indigo-400">19 € / mes</span>
                   </div>
-                  <p className="text-xs text-gray-400 mb-4">
+                  <p className="text-xs text-gray-400 mb-5 leading-relaxed">
                     Para pymes y profesionales en crecimiento que precisan firma electrónica y tesorería.
                   </p>
-                  <ul className="text-xs text-gray-300 space-y-2 mb-6">
-                    <li className="flex items-center gap-2">
-                      <CheckCircle2 size={14} className="text-emerald-400 shrink-0" />
+                  <ul className="text-xs text-gray-300 space-y-3 mb-6">
+                    <li className="flex items-center gap-2.5">
+                      <CheckCircle2 size={15} className="text-emerald-400 shrink-0" />
                       <span>Hasta 100 documentos mensuales</span>
                     </li>
-                    <li className="flex items-center gap-2">
-                      <CheckCircle2 size={14} className="text-emerald-400 shrink-0" />
-                      <span>Firma electrónica certificada del cliente</span>
+                    <li className="flex items-center gap-2.5">
+                      <CheckCircle2 size={15} className="text-emerald-400 shrink-0" />
+                      <span>Firma electrónica certificada del cliente (eIDAS)</span>
                     </li>
-                    <li className="flex items-center gap-2">
-                      <CheckCircle2 size={14} className="text-emerald-400 shrink-0" />
+                    <li className="flex items-center gap-2.5">
+                      <CheckCircle2 size={15} className="text-emerald-400 shrink-0" />
                       <span>Módulo de tesorería y cobros</span>
                     </li>
-                    <li className="flex items-center gap-2">
-                      <CheckCircle2 size={14} className="text-emerald-400 shrink-0" />
+                    <li className="flex items-center gap-2.5">
+                      <CheckCircle2 size={15} className="text-emerald-400 shrink-0" />
                       <span>Hasta 5 usuarios concurrentes</span>
                     </li>
                   </ul>
@@ -782,15 +801,15 @@ export default function SettingsPage() {
                 <button
                   onClick={() => handleStripeCheckout('pro')}
                   disabled={stripeLoading === 'pro' || activePlanInfo.plan === 'pro'}
-                  className="w-full py-2.5 px-4 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed text-white text-xs font-semibold rounded-xl flex items-center justify-center gap-2 transition-all cursor-pointer shadow-lg shadow-indigo-600/20"
+                  className="w-full py-3 px-4 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed text-white text-xs font-bold rounded-xl flex items-center justify-center gap-2 transition-all cursor-pointer shadow-lg shadow-indigo-600/25"
                 >
                   {stripeLoading === 'pro' ? (
-                    <Loader2 size={14} className="animate-spin" />
+                    <Loader2 size={15} className="animate-spin" />
                   ) : activePlanInfo.plan === 'pro' ? (
                     <span>Plan Actual</span>
                   ) : (
                     <>
-                      <Zap size={14} />
+                      <Zap size={15} />
                       <span>Contratar Plan Profesional</span>
                     </>
                   )}
@@ -798,33 +817,33 @@ export default function SettingsPage() {
               </div>
 
               {/* Plan Business */}
-              <div className="p-6 rounded-2xl bg-[var(--bg-surface)] border border-indigo-500/30 space-y-4 relative flex flex-col justify-between">
-                <div className="absolute -top-2.5 right-4 bg-indigo-600 text-white text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full shadow">
+              <div className="p-6 sm:p-8 rounded-3xl bg-[var(--bg-surface)] border border-indigo-500/40 space-y-6 relative flex flex-col justify-between shadow-xl shadow-indigo-500/10">
+                <div className="absolute -top-3 right-6 bg-indigo-600 text-white text-[10px] font-black uppercase tracking-wider px-3 py-1 rounded-full shadow-lg">
                   Recomendado
                 </div>
                 <div>
                   <div className="flex justify-between items-center mb-2">
-                    <h4 className="font-bold text-white text-base">Plan Empresa</h4>
-                    <span className="text-xs font-mono font-bold text-indigo-400">49 € / mes</span>
+                    <h4 className="font-bold text-white text-lg">Plan Empresa</h4>
+                    <span className="text-sm font-mono font-black text-indigo-400">49 € / mes</span>
                   </div>
-                  <p className="text-xs text-gray-400 mb-4">
+                  <p className="text-xs text-gray-400 mb-5 leading-relaxed">
                     Para organizaciones consolidadas con alto volumen y equipo multidisciplinar.
                   </p>
-                  <ul className="text-xs text-gray-300 space-y-2 mb-6">
-                    <li className="flex items-center gap-2">
-                      <CheckCircle2 size={14} className="text-emerald-400 shrink-0" />
+                  <ul className="text-xs text-gray-300 space-y-3 mb-6">
+                    <li className="flex items-center gap-2.5">
+                      <CheckCircle2 size={15} className="text-emerald-400 shrink-0" />
                       <span>Documentos ilimitados</span>
                     </li>
-                    <li className="flex items-center gap-2">
-                      <CheckCircle2 size={14} className="text-emerald-400 shrink-0" />
+                    <li className="flex items-center gap-2.5">
+                      <CheckCircle2 size={15} className="text-emerald-400 shrink-0" />
                       <span>Hasta 25 usuarios concurrentes</span>
                     </li>
-                    <li className="flex items-center gap-2">
-                      <CheckCircle2 size={14} className="text-emerald-400 shrink-0" />
+                    <li className="flex items-center gap-2.5">
+                      <CheckCircle2 size={15} className="text-emerald-400 shrink-0" />
                       <span>Integración Veri*Factu directa</span>
                     </li>
-                    <li className="flex items-center gap-2">
-                      <CheckCircle2 size={14} className="text-emerald-400 shrink-0" />
+                    <li className="flex items-center gap-2.5">
+                      <CheckCircle2 size={15} className="text-emerald-400 shrink-0" />
                       <span>Auditoría inalterable y exportación</span>
                     </li>
                   </ul>
@@ -833,15 +852,15 @@ export default function SettingsPage() {
                 <button
                   onClick={() => handleStripeCheckout('business')}
                   disabled={stripeLoading === 'business' || activePlanInfo.plan === 'business'}
-                  className="w-full py-2.5 px-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed text-white text-xs font-semibold rounded-xl flex items-center justify-center gap-2 transition-all cursor-pointer shadow-lg shadow-indigo-600/30"
+                  className="w-full py-3 px-4 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed text-white text-xs font-bold rounded-xl flex items-center justify-center gap-2 transition-all cursor-pointer shadow-lg shadow-indigo-600/25"
                 >
                   {stripeLoading === 'business' ? (
-                    <Loader2 size={14} className="animate-spin" />
+                    <Loader2 size={15} className="animate-spin" />
                   ) : activePlanInfo.plan === 'business' ? (
                     <span>Plan Actual</span>
                   ) : (
                     <>
-                      <Zap size={14} />
+                      <Zap size={15} />
                       <span>Contratar Plan Empresa</span>
                     </>
                   )}

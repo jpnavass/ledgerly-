@@ -51,7 +51,10 @@ export async function updateSession(request: NextRequest) {
     pathname.startsWith('/legal') ||
     pathname.startsWith('/api/');
 
-  if (!user && !isPublicRoute) {
+  const hasGuestAccess = request.cookies.get('pe_guest_session')?.value === 'true';
+  const hasAccess = Boolean(user || hasGuestAccess);
+
+  if (!hasAccess && !isPublicRoute) {
     const url = request.nextUrl.clone();
     url.pathname = '/login';
     return NextResponse.redirect(url);

@@ -113,7 +113,7 @@ export default function LoginPage() {
         <button
           type="submit"
           disabled={loading}
-          className="w-full mt-2 py-2.5 px-4 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-semibold rounded-xl shadow-lg shadow-blue-600/20 flex items-center justify-center gap-2 transition-all cursor-pointer"
+          className="w-full mt-2 py-3 px-4 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-bold rounded-xl shadow-lg shadow-indigo-600/25 flex items-center justify-center gap-2 transition-all cursor-pointer"
         >
           {loading ? (
             <>
@@ -122,18 +122,39 @@ export default function LoginPage() {
             </>
           ) : (
             <>
-              <span>Iniciar Sesión</span>
+              <span>Acceder con mi Cuenta</span>
               <ArrowRight className="w-4 h-4" />
             </>
           )}
         </button>
+
+        <div className="relative my-4">
+          <div className="absolute inset-0 flex items-center">
+            <div className="w-full border-t border-slate-800" />
+          </div>
+          <div className="relative flex justify-center text-xs uppercase">
+            <span className="bg-[#0f172a] px-2 text-slate-500 font-mono text-[10px]">O bien</span>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => {
+            document.cookie = 'pe_guest_session=true; path=/; max-age=604800; SameSite=Lax';
+            router.push('/dashboard');
+          }}
+          className="w-full py-2.5 px-4 bg-slate-800/90 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded-xl border border-slate-700/80 flex items-center justify-center gap-2 transition-all cursor-pointer"
+        >
+          <span>Acceso Directo al Panel de Demostración</span>
+          <ArrowRight className="w-3.5 h-3.5 text-indigo-400" />
+        </button>
       </form>
 
-      <div className="mt-6 pt-6 border-t border-slate-800/80 text-center">
+      <div className="mt-6 pt-5 border-t border-slate-800/80 text-center">
         <p className="text-xs text-slate-400">
           ¿No dispone de cuenta corporativa?{' '}
-          <Link href="/registro" className="text-blue-400 font-medium hover:text-blue-300">
-            Crear organización
+          <Link href="/registro" className="text-indigo-400 font-semibold hover:text-indigo-300">
+            Crear organización gratis
           </Link>
         </p>
       </div>

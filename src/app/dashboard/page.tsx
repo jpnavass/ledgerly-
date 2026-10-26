@@ -105,7 +105,7 @@ export default function DashboardPage() {
   });
 
   const handleCopyLink = (docId: string) => {
-    const clientUrl = `${window.location.origin}/firmar/${docId}`;
+    const clientUrl = `${window.location.origin}/ver/${docId}`;
     navigator.clipboard?.writeText(clientUrl);
     setCopiedId(docId);
     setTimeout(() => setCopiedId(null), 2000);
