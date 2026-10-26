@@ -383,7 +383,8 @@ export default function ClientsPage() {
             <input
               type="text"
               placeholder="Filtrar por razón social, CIF o email de contacto..."
-              className="input pl-10 bg-white/[0.03] border-white/10 text-sm"
+              className="input has-icon-left bg-white/[0.03] border-white/10 text-sm"
+              style={{ paddingLeft: '2.75rem' }}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />

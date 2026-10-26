@@ -646,24 +646,24 @@ export default function SettingsPage() {
                 <span>Parámetros Documentales por Defecto</span>
               </h2>
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 text-xs">
                 <div>
-                  <label className="text-gray-300 font-semibold block mb-1">Días de Validez de Presupuesto</label>
+                  <label className="text-gray-300 font-semibold block mb-2">Días de Validez de Presupuesto</label>
                   <input
                     type="number"
                     min="1"
                     max="365"
                     value={validityDays}
                     onChange={(e) => setValidityDays(Number(e.target.value) || 30)}
-                    className="input bg-[var(--bg-surface-2)] border-white/10 text-xs font-mono w-full px-3 py-2 rounded-xl text-white"
+                    className="input bg-[var(--bg-surface-2)] border-white/10 text-xs font-mono w-full px-3.5 py-2.5 rounded-xl text-white"
                   />
                 </div>
                 <div>
-                  <label className="text-gray-300 font-semibold block mb-1">Tipo IVA por Defecto (%)</label>
+                  <label className="text-gray-300 font-semibold block mb-2">Tipo IVA por Defecto (%)</label>
                   <select
                     value={defaultVat}
                     onChange={(e) => setDefaultVat(Number(e.target.value))}
-                    className="input bg-[var(--bg-surface-2)] border-white/10 text-xs w-full px-3 py-2 rounded-xl text-white"
+                    className="input bg-[var(--bg-surface-2)] border-white/10 text-xs w-full px-3.5 py-2.5 rounded-xl text-white cursor-pointer"
                   >
                     <option value={21}>21% (General)</option>
                     <option value={10}>10% (Reducido)</option>
@@ -672,24 +672,24 @@ export default function SettingsPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="text-gray-300 font-semibold block mb-1">Retención IRPF por Defecto (%)</label>
+                  <label className="text-gray-300 font-semibold block mb-2">Retención IRPF por Defecto (%)</label>
                   <input
                     type="number"
                     min="0"
                     max="100"
                     value={defaultIrpf}
                     onChange={(e) => setDefaultIrpf(Number(e.target.value) || 0)}
-                    className="input bg-[var(--bg-surface-2)] border-white/10 text-xs font-mono w-full px-3 py-2 rounded-xl text-white"
+                    className="input bg-[var(--bg-surface-2)] border-white/10 text-xs font-mono w-full px-3.5 py-2.5 rounded-xl text-white"
                   />
                 </div>
                 <div className="sm:col-span-3">
-                  <label className="text-gray-300 font-semibold block mb-1">Condiciones Contractuales Generales (Cláusula)</label>
+                  <label className="text-gray-300 font-semibold block mb-2">Condiciones Contractuales Generales (Cláusula)</label>
                   <textarea
                     rows={3}
                     value={defaultTerms}
                     onChange={(e) => setDefaultTerms(e.target.value)}
                     placeholder="Condiciones de pago, plazo de ejecución y garantías personalizadas de su empresa..."
-                    className="input bg-[var(--bg-surface-2)] border-white/10 text-xs w-full px-3 py-2 rounded-xl text-white"
+                    className="textarea bg-[var(--bg-surface-2)] border-white/10 text-xs w-full px-3.5 py-3 rounded-xl text-white leading-relaxed resize-y min-h-[90px]"
                   />
                 </div>
               </div>

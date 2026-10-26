@@ -332,7 +332,8 @@ export default function CatalogPage() {
             <input
               type="text"
               placeholder="Buscar por concepto, descripción técnica o categoría..."
-              className="input pl-10 bg-white/[0.03] border-white/10 text-sm"
+              className="input has-icon-left bg-white/[0.03] border-white/10 text-sm"
+              style={{ paddingLeft: '2.75rem' }}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />

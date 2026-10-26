@@ -87,8 +87,7 @@
 
 /* Campos de Formulario */
 .input,
-.select,
-.textarea {
+.select {
   width: 100%;
   background-color: var(--bg-surface);
   color: var(--text-primary);
@@ -100,17 +99,27 @@
   transition: border-color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease);
 }
 
+.textarea,
+textarea.input {
+  width: 100%;
+  background-color: var(--bg-surface);
+  color: var(--text-primary);
+  border: 1px solid var(--border-input);
+  border-radius: var(--radius-md);
+  height: auto !important;
+  min-height: 80px;
+  padding: 0.75rem 0.875rem !important;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  transition: border-color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease);
+}
+
 .input:focus,
 .select:focus,
 .textarea:focus {
   outline: none;
   border-color: var(--accent-fg);
   box-shadow: 0 0 0 1px var(--accent-fg);
-}
-
-.textarea {
-  height: auto;
-  padding: 0.75rem 0.875rem;
 }
 
 .input-icon-left {
@@ -123,6 +132,21 @@
   align-items: center;
   pointer-events: none;
   color: var(--text-tertiary);
+  z-index: 10;
+}
+
+/* Soporte estricto para inputs con icono: garantiza que el texto o placeholder NUNCA se monte sobre el icono */
+.input-icon-left + .input,
+.input-icon-left + input,
+.input.has-icon-left,
+.input-with-icon,
+.has-icon-left {
+  padding-left: 2.75rem !important;
+}
+
+.input.has-icon-right,
+.has-icon-right {
+  padding-right: 2.75rem !important;
 }
 
 /* Tarjetas y Superficies */

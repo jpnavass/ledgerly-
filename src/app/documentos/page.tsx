@@ -199,7 +199,8 @@ export default function DocumentsPage() {
               <input
                 type="text"
                 placeholder="Buscar por código de serie, título de obra, cliente o CIF..."
-                className="input pl-10 bg-white/[0.03] border-white/10 text-sm w-full"
+                className="input has-icon-left bg-white/[0.03] border-white/10 text-sm w-full"
+                style={{ paddingLeft: '2.75rem' }}
                 value={search}
                 onChange={(e) => {
                   setSearch(e.target.value);
