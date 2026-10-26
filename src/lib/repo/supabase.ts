@@ -280,6 +280,13 @@ export class SupabaseRepository implements DataRepository {
   }
 
   // Organización y Ajustes
+  async getAllOrganizations(): Promise<Org[]> {
+    const supabase = this.getClient();
+    const { data, error } = await supabase.from('orgs').select('*');
+    if (error || !data) return [];
+    return data as Org[];
+  }
+
   async getOrganization(orgId: string): Promise<Org | null> {
     const supabase = this.getClient();
     const { data, error } = await supabase.from('orgs').select('*').eq('id', orgId).single();

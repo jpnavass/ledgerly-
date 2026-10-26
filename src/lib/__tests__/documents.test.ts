@@ -571,4 +571,366 @@ describe('Ciclo de Vida Documental (documents.ts)', () => {
     const n2 = await counter.nextNumber('org-1', 'invoice', 'FAC', 2026);
     assert.strictEqual(n2, 1);
   });
+
+  it('cobertura de ramas: createDraftDocument gestiona títulos vacíos, términos por defecto y cliente discordante', () => {
+    // Cliente discordante
+    assert.throws(
+      () =>
+        createDraftDocument({
+          doc_type: 'quote',
+          client_id: 'cli-1',
+          client: { ...validClient, id: 'cli-diferente' },
+          title: 'Presupuesto',
+          org_id: validOrg.id,
+        }),
+      DocumentError
+    );
+
+    // Título en blanco y org_settings personalizado
+    const customDraft = createDraftDocument({
+      doc_type: 'quote',
+      client_id: validClient.id,
+      client: validClient,
+      title: '   ',
+      org_id: validOrg.id,
+      org_settings: {
+        id: 'set-1',
+        org_id: validOrg.id,
+        default_validity_days: 60,
+        default_terms_text: 'Pago a 60 días f.f.',
+      },
+    });
+
+    assert.strictEqual(customDraft.title, 'QUOTE');
+    assert.strictEqual(customDraft.notes_public, 'Pago a 60 días f.f.');
+  });
+
+  it('cobertura de ramas: validaciones fiscales completas de emisor, receptor e importes en validateAndIssueDocument', () => {
+    const draftBase = createDraftDocument({
+      doc_type: 'invoice',
+      client_id: validClient.id,
+      client: validClient,
+      title: 'Factura Borrador',
+      org_id: validOrg.id,
+    });
+
+    // 1. Emisor sin nombre
+    assert.throws(
+      () =>
+        validateAndIssueDocument({
+          doc: draftBase,
+          client: validClient,
+          org: { ...validOrg, name: '', legal_name: '' },
+          series: 'FAC',
+          nextNumber: 1,
+        }),
+      /Falta la razón social/
+    );
+
+    // 2. Emisor sin tax_id
+    assert.throws(
+      () =>
+        validateAndIssueDocument({
+          doc: draftBase,
+          client: validClient,
+          org: { ...validOrg, tax_id: '' },
+          series: 'FAC',
+          nextNumber: 1,
+        }),
+      /Falta el NIF\/CIF/
+    );
+
+    // 3. Emisor con domicilio incompleto
+    assert.throws(
+      () =>
+        validateAndIssueDocument({
+          doc: draftBase,
+          client: validClient,
+          org: { ...validOrg, city: '' },
+          series: 'FAC',
+          nextNumber: 1,
+        }),
+      /domicilio fiscal del emisor/
+    );
+
+    // 4. Cliente sin tax_id
+    assert.throws(
+      () =>
+        validateAndIssueDocument({
+          doc: draftBase,
+          client: { ...validClient, tax_id: '' },
+          org: validOrg,
+          series: 'FAC',
+          nextNumber: 1,
+        }),
+      /El cliente no dispone de NIF/
+    );
+
+    // 5. Cliente con domicilio incompleto
+    assert.throws(
+      () =>
+        validateAndIssueDocument({
+          doc: draftBase,
+          client: { ...validClient, postal_code: '' },
+          org: validOrg,
+          series: 'FAC',
+          nextNumber: 1,
+        }),
+      /domicilio fiscal del cliente/
+    );
+
+    // 6. Sin partidas no opcionales
+    assert.throws(
+      () =>
+        validateAndIssueDocument({
+          doc: draftBase,
+          client: validClient,
+          org: validOrg,
+          series: 'FAC',
+          nextNumber: 1,
+        }),
+      /al menos una partida/
+    );
+
+    // 7. Con partidas pero importe <= 0
+    const zeroLineDoc: Document = {
+      ...draftBase,
+      items: [
+        {
+          id: 'it-0',
+          item_type: 'line',
+          position: 1,
+          description: 'Línea a 0',
+          quantity: 1,
+          price_cents: 0,
+          discount_pct: 0,
+          vat_rate: 21,
+          irpf_rate: 0,
+          is_optional: false,
+        },
+      ],
+      total_cents: 0,
+    };
+
+    assert.throws(
+      () =>
+        validateAndIssueDocument({
+          doc: zeroLineDoc,
+          client: validClient,
+          org: validOrg,
+          series: 'FAC',
+          nextNumber: 1,
+        }),
+      /superior a cero/
+    );
+
+    // 8. Factura rectificativa permite total <= 0
+    const creditDraft: Document = {
+      ...draftBase,
+      doc_type: 'credit_note',
+      items: [
+        {
+          id: 'it-rec-1',
+          item_type: 'line',
+          position: 1,
+          description: 'Abono',
+          quantity: 1,
+          price_cents: -5000,
+          discount_pct: 0,
+          vat_rate: 21,
+          irpf_rate: 0,
+          is_optional: false,
+        },
+      ],
+      total_cents: -6050,
+    };
+
+    const issuedCredit = validateAndIssueDocument({
+      doc: creditDraft,
+      client: validClient,
+      org: validOrg,
+      series: 'REC',
+      nextNumber: 1,
+    });
+    assert.strictEqual(issuedCredit.status, 'issued');
+    assert.strictEqual(issuedCredit.total_cents, -6050);
+  });
+
+  it('cobertura de ramas: createNewDocumentVersion falla si el documento es borrador', () => {
+    const draftDoc = createDraftDocument({
+      doc_type: 'quote',
+      client_id: validClient.id,
+      client: validClient,
+      title: 'Borrador v1',
+      org_id: validOrg.id,
+    });
+
+    assert.throws(() => createNewDocumentVersion(draftDoc), /ya es editable directamente/);
+  });
+
+  it('cobertura de ramas: convertDocument soporta destinos no-factura y valida transiciones permitidas', () => {
+    const acceptedDoc: Document = {
+      ...createDraftDocument({
+        doc_type: 'quote',
+        client_id: validClient.id,
+        client: validClient,
+        title: 'Presupuesto Aceptado',
+        org_id: validOrg.id,
+      }),
+      status: 'accepted',
+      items: [
+        {
+          id: 'it-conv',
+          item_type: 'line',
+          position: 1,
+          description: 'Trabajos de reforma',
+          quantity: 1,
+          price_cents: 10000,
+          discount_pct: 0,
+          vat_rate: 21,
+          irpf_rate: 0,
+          is_optional: false,
+        },
+      ],
+    };
+
+    // Conversión a albarán (delivery_note) no cierra el origen como 'invoiced'
+    const { newDocument: deliveryNote, updatedSource } = convertDocument({
+      source: acceptedDoc,
+      targetType: 'delivery_note',
+      billedPercentage: 100,
+    });
+
+    assert.strictEqual(deliveryNote.doc_type, 'delivery_note');
+    assert.strictEqual(updatedSource.status, 'accepted');
+
+    // Conversión prohibida: quote no puede convertirse directamente a credit_note
+    assert.throws(
+      () =>
+        convertDocument({
+          source: acceptedDoc,
+          targetType: 'credit_note',
+        }),
+      /No está permitida la conversión/
+    );
+  });
+
+  it('cobertura de ramas: createCreditNoteDocument valida estado original, longitud de motivo y método de sustitución', () => {
+    const issuedInvoice: Document = {
+      ...createDraftDocument({
+        doc_type: 'invoice',
+        client_id: validClient.id,
+        client: validClient,
+        title: 'Factura Emitida',
+        org_id: validOrg.id,
+      }),
+      status: 'issued',
+      series: 'FAC',
+      number: 10,
+      items: [
+        {
+          id: 'it-inv-10',
+          item_type: 'line',
+          position: 1,
+          description: 'Suministro',
+          quantity: 1,
+          price_cents: 20000,
+          discount_pct: 0,
+          vat_rate: 21,
+          irpf_rate: 0,
+          is_optional: false,
+        },
+      ],
+    };
+
+    // Motivo demasiado corto
+    assert.throws(
+      () =>
+        createCreditNoteDocument({
+          original: issuedInvoice,
+          reason: 'Err',
+          method: 'differences',
+        }),
+      /mínimo 5 caracteres/
+    );
+
+    // Intentar rectificar borrador
+    assert.throws(
+      () =>
+        createCreditNoteDocument({
+          original: { ...issuedInvoice, status: 'draft' },
+          reason: 'Error en cálculo',
+          method: 'differences',
+        }),
+      /Solo pueden rectificarse facturas emitidas/
+    );
+
+    // Método de sustitución anula la original
+    const { creditNote, updatedOriginal } = createCreditNoteDocument({
+      original: issuedInvoice,
+      reason: 'Sustitución por error en partidas',
+      method: 'substitution',
+    });
+
+    assert.strictEqual(creditNote.rectification_method, 'substitution');
+    assert.strictEqual(updatedOriginal.status, 'void');
+  });
+
+  it('cobertura de ramas: checkDocumentExpiry evalúa tipos no-quote, estados no-vencibles y fechas futuras', () => {
+    // No quote (ej. invoice)
+    const invoiceDoc: Document = {
+      ...createDraftDocument({
+        doc_type: 'invoice',
+        client_id: validClient.id,
+        client: validClient,
+        title: 'Factura',
+        org_id: validOrg.id,
+      }),
+      status: 'sent',
+      valid_until: '2020-01-01',
+    };
+    assert.strictEqual(checkDocumentExpiry(invoiceDoc, '2027-01-01').status, 'sent');
+
+    // Quote en draft
+    const draftQuote: Document = {
+      ...createDraftDocument({
+        doc_type: 'quote',
+        client_id: validClient.id,
+        client: validClient,
+        title: 'Borrador',
+        org_id: validOrg.id,
+      }),
+      status: 'draft',
+      valid_until: '2020-01-01',
+    };
+    assert.strictEqual(checkDocumentExpiry(draftQuote, '2027-01-01').status, 'draft');
+
+    // Quote sin valid_until
+    const noExpiryQuote: Document = {
+      ...createDraftDocument({
+        doc_type: 'quote',
+        client_id: validClient.id,
+        client: validClient,
+        title: 'Sin Fecha',
+        org_id: validOrg.id,
+      }),
+      status: 'sent',
+      valid_until: undefined,
+    };
+    assert.strictEqual(checkDocumentExpiry(noExpiryQuote, '2027-01-01').status, 'sent');
+
+    // Quote con fecha futura
+    const futureQuote: Document = {
+      ...createDraftDocument({
+        doc_type: 'quote',
+        client_id: validClient.id,
+        client: validClient,
+        title: 'Futuro',
+        org_id: validOrg.id,
+      }),
+      status: 'sent',
+      valid_until: '2027-12-31',
+    };
+    assert.strictEqual(checkDocumentExpiry(futureQuote, '2027-01-01').status, 'sent');
+  });
 });

@@ -22,6 +22,7 @@
 6. `resend`: Envío de códigos OTP de firma y notificaciones documentales por correo electrónico.
 7. `@tanstack/react-query`: Caché reactiva y sincronización de datos en cliente.
 8. `lucide-react`: Sistema iconográfico SVG vectorial ligero para interfaz y navegación de alta densidad, autorizado en la Fase 10.1 para garantizar iconografía accesible, sin dependencias pesadas ni fuentes de iconos que bloqueen el renderizado.
+9. `jsqr` (devDependency): Decodificador de códigos QR implementado 100% en JavaScript/TypeScript sin dependencias binarias en C++ ni bindings nativos externos. Utilizado en la suite de pruebas unitarias (`pdf.test.ts`) para extraer y validar que el código QR incrustado en los PDFs generados es legible y contiene los parámetros oficiales exigidos por el Artículo 21 de la Orden HAC/1177/2024.
 
 ## Decisiones de Arquitectura y Desviaciones Técnicas
 
@@ -38,3 +39,8 @@
 ### 3. Vigencia del Sistema de Temas, Acentos y Accesibilidad (Fase 10)
 - **Confirmación:** La parametrización de acentos, la escala tipográfica `font_scale` (100%, 110%, 125%), la persistencia en cookie `pe_ui` y la extracción de tokens semánticos a `src/styles/tokens.css` forman parte íntegra de la **Fase 10** ("Sistema de Diseño Semántico y Accesibilidad WCAG 2.1 / 2.2 AA") de la versión 2 vigente de la especificación técnica.
 - `globals.css` se redujo deliberadamente para delegar la semántica de color y variables a `tokens.css`, asegurando paridad exacta entre `@media (prefers-color-scheme: dark)` y el atributo `[data-theme="dark"]`.
+
+### 4. Incorporación de `jsqr` en Desarrollo (`devDependencies`)
+- **Contexto:** La normativa tributaria española (Orden HAC/1177/2024, Artículo 21) exige que toda factura emitida incorpore un código QR legible con una URL oficial para el cotejo en la sede de la Agencia Tributaria.
+- **Decisión:** Para garantizar contractualmente que el PDF no contiene únicamente un dibujo simulado o estático sino una imagen QR válida y escaneable, se incorporó `jsqr` como dependencia exclusiva de desarrollo y pruebas.
+- **Justificación:** A diferencia de alternativas basadas en `node-canvas` o `zbar` (que exigen librerías compartidas del sistema operativo como `libcairo` o `libzbar`), `jsqr` opera directamente sobre mapas de bytes sin dependencias nativas externas, garantizando que los tests se ejecuten de forma determinista y sin fallos en cualquier entorno (Windows, Linux, macOS o CI/CD).

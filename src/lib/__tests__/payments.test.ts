@@ -162,4 +162,110 @@ describe('Tesorería, Hitos y Cobros (payments.ts)', () => {
     // Comillas dobles escapadas (""El Roble"")
     assert(csv.includes('""El Roble""'));
   });
+
+  it('cobertura de ramas: buildMilestones valida importes positivos, specs no vacíos, suma 100% e importes fijos', () => {
+    // Total no válido
+    assert.throws(() => buildMilestones(0, [{ label: 'Único', percentage: 100 }]), PaymentError);
+    assert.throws(() => buildMilestones(-500, [{ label: 'Único', percentage: 100 }]), PaymentError);
+
+    // Specs vacíos
+    assert.throws(() => buildMilestones(1000, []), PaymentError);
+
+    // Suma porcentajes incorrecta (distinta de 100)
+    assert.throws(
+      () =>
+        buildMilestones(1000, [
+          { label: 'H1', percentage: 50 },
+          { label: 'H2', percentage: 40 },
+        ]),
+      PaymentError
+    );
+
+    // Hitos por importe fijo y fecha por defecto
+    const fixedMilestones = buildMilestones(1000, [
+      { label: 'Señal', amount_cents: 300, due_days: 0 },
+      { label: 'Entrega', amount_cents: 700, due_days: 15 },
+    ]);
+    assert.strictEqual(fixedMilestones.length, 2);
+    assert.strictEqual(fixedMilestones[0].amount_cents, 300);
+    assert.strictEqual(fixedMilestones[1].amount_cents, 700);
+  });
+
+  it('cobertura de ramas: registerPayment valida hito inexistente, hito ya cobrado, cobro parcial y sobrecobro', () => {
+    const p1 = {
+      id: 'p-branch-1',
+      document_id: 'doc-1',
+      label: 'Hito 1',
+      amount_cents: 10000,
+      due_date: '2027-03-01',
+      status: 'pending' as const,
+    };
+    const p2 = {
+      id: 'p-branch-2',
+      document_id: 'doc-1',
+      label: 'Hito 2',
+      amount_cents: 10000,
+      due_date: '2027-03-15',
+      status: 'completed' as const,
+      paid_at: '2027-03-01',
+    };
+
+    // Hito inexistente
+    assert.throws(() => registerPayment([p1], 'p-fantasma', 20000), /no encontrado/);
+
+    // Hito ya completado
+    assert.throws(() => registerPayment([p2], 'p-branch-2', 20000), /ya fue liquidado/);
+
+    // Importe 0 o negativo
+    assert.throws(() => registerPayment([p1], 'p-branch-1', 20000, { amountCents: 0 }), PaymentError);
+    assert.throws(() => registerPayment([p1], 'p-branch-1', 20000, { amountCents: -50 }), PaymentError);
+
+    // Cobro parcial de un hito: genera resto y actualiza estado a partially_paid
+    const resPartial = registerPayment([p1], 'p-branch-1', 10000, { amountCents: 4000 });
+    assert.strictEqual(resPartial.documentStatus, 'partially_paid');
+    assert.strictEqual(resPartial.totalPaidCents, 4000);
+    assert.strictEqual(resPartial.pendingCents, 6000);
+    assert.strictEqual(resPartial.updatedPayments.length, 2);
+    assert.strictEqual(resPartial.updatedPayments[1].amount_cents, 6000);
+
+    // Sobrecobro que excede totalDocCents
+    assert.throws(
+      () =>
+        registerPayment([p1], 'p-branch-1', 5000, { amountCents: 10000 }),
+      /Sobrecobro detectado/
+    );
+  });
+
+  it('cobertura de ramas: exportInvoicesToCsv maneja borradores sin serie e importes negativos rectificativos', () => {
+    const mixedInvoices = [
+      {
+        series: null,
+        number: null,
+        issue_date: undefined,
+        client_name: undefined,
+        client_tax_id: undefined,
+        subtotal_cents: 0,
+        vat_cents: 0,
+        total_cents: 0,
+        status: 'draft',
+      },
+      {
+        series: 'REC',
+        number: 5,
+        issue_date: '2027-03-01',
+        client_name: 'Cliente Rectificado',
+        client_tax_id: 'B99999999',
+        subtotal_cents: -10000,
+        vat_cents: -2100,
+        total_cents: -12100,
+        status: 'issued',
+      },
+    ];
+
+    const csv = exportInvoicesToCsv(mixedInvoices);
+    assert(csv.includes('"BORRADOR"'));
+    assert(csv.includes('"-100,00"'));
+    assert(csv.includes('"-21,00"'));
+    assert(csv.includes('"-121,00"'));
+  });
 });

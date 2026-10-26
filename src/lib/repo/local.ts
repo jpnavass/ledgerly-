@@ -295,6 +295,10 @@ export class LocalStorageRepository implements DataRepository {
   }
 
   // Organización y Ajustes
+  async getAllOrganizations(): Promise<Org[]> {
+    return safeGet<Org[]>(LOCAL_STORAGE_KEYS.ORGANIZATIONS, []);
+  }
+
   async getOrganization(orgId: string): Promise<Org | null> {
     const orgs = safeGet<Org[]>(LOCAL_STORAGE_KEYS.ORGANIZATIONS, []);
     return orgs.find((o) => o.id === orgId) || null;

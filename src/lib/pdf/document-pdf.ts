@@ -189,6 +189,7 @@ export interface DocumentPdfProps {
   organization: Org;
   client: Client;
   qrDataUrl?: string;
+  billingRecordHash?: string;
 }
 
 const e = React.createElement;
@@ -198,6 +199,7 @@ export function DocumentPdf({
   organization,
   client,
   qrDataUrl,
+  billingRecordHash,
 }: DocumentPdfProps) {
   const isFinalInvoice = document.doc_type === 'invoice' || document.doc_type === 'credit_note';
 
@@ -394,7 +396,7 @@ export function DocumentPdf({
               e(
                 Text,
                 { style: { fontFamily: 'Helvetica-Bold', marginTop: 2 } },
-                `Huella Digital: ${document.signature_data ? document.signature_data.slice(0, 32) : (document.pdf_hash ? document.pdf_hash.slice(0, 32) : 'REGISTRADA')}...`
+                `Huella Digital: ${billingRecordHash || document.billing_record_hash || document.pdf_hash || 'REGISTRADA'}`
               )
             )
           )

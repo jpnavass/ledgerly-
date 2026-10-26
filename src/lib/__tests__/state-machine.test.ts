@@ -133,4 +133,26 @@ describe('Máquina de Estados Documental (state-machine.ts)', () => {
     // 5 tipos de documentos x 11 estados origen x 11 estados destino = 605 combinaciones evaluadas
     assert.strictEqual(totalChecked, 5 * 11 * 11);
   });
+
+  it('cobertura de ramas: canTransition gestiona tipos no reconocidos y InvalidTransitionError expone metadatos y fallbacks', () => {
+    // Tipo documental inexistente
+    const unknownType = 'custom_order' as any;
+    assert.strictEqual(canTransition(unknownType, 'draft', 'sent'), false);
+    assert.throws(
+      () => assertCanTransition(unknownType, 'draft', 'sent'),
+      (err: any) => {
+        assert(err instanceof InvalidTransitionError);
+        assert.strictEqual(err.docType, 'custom_order');
+        assert.strictEqual(err.from, 'draft');
+        assert.strictEqual(err.to, 'sent');
+        assert(err.message.includes('custom_order'));
+        return true;
+      }
+    );
+
+    // Error con estados sin etiquetas traducidas utiliza el identificador crudo como fallback
+    const errFallback = new InvalidTransitionError(unknownType, 'status_a' as any, 'status_b' as any);
+    assert(errFallback.message.includes("'status_a'"));
+    assert(errFallback.message.includes("'status_b'"));
+  });
 });

@@ -20,9 +20,12 @@ export interface GeneratePdfResult {
 export async function generateDocumentPdf(
   doc: Document,
   org: Org,
-  client: Client
+  client: Client,
+  billingRecordHash?: string
 ): Promise<GeneratePdfResult> {
   let qrDataUrl: string | undefined;
+
+  const effectiveHash = billingRecordHash || doc.billing_record_hash || '';
 
   const isFinalInvoice = doc.doc_type === 'invoice' || doc.doc_type === 'credit_note';
   if (isFinalInvoice) {
@@ -32,7 +35,7 @@ export async function generateDocumentPdf(
       seriesNumber,
       issueDate: doc.issue_date || doc.created_at.slice(0, 10),
       totalCents: doc.total_cents,
-      hash: doc.signature_data || doc.pdf_hash || doc.id,
+      hash: effectiveHash || doc.pdf_hash || doc.id,
       isVerifactu: false,
     });
     qrDataUrl = await generateQrDataUrl(qrUrl);
@@ -43,6 +46,7 @@ export async function generateDocumentPdf(
     organization: org,
     client,
     qrDataUrl,
+    billingRecordHash: effectiveHash,
   });
 
   const buffer = await renderToBuffer(element as any);

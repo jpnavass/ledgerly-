@@ -9,15 +9,16 @@ export interface QrUrlParams {
   seriesNumber: string;
   issueDate: string; // YYYY-MM-DD
   totalCents: number;
-  hash: string;
+  hash?: string;
   isVerifactu?: boolean;
 }
 
 /**
- * Construye la URL oficial de cotejo de la factura según la Orden HAC/1177/2024.
+ * Construye la URL oficial de cotejo de la factura según la Orden HAC/1177/2024 Artículo 21.2.
+ * Parámetros reglamentarios exclusivos: nif, numserie, fecha e importe.
  */
 export function buildQrVerificationUrl(params: QrUrlParams): string {
-  const { taxId, seriesNumber, issueDate, totalCents, hash, isVerifactu = false } = params;
+  const { taxId, seriesNumber, issueDate, totalCents, isVerifactu = false } = params;
 
   // Formato DD-MM-YYYY
   const parts = issueDate.split('-');
@@ -30,10 +31,9 @@ export function buildQrVerificationUrl(params: QrUrlParams): string {
 
   const query = new URLSearchParams({
     nif: taxId,
-    num: seriesNumber,
+    numserie: seriesNumber,
     fecha: formattedDate,
-    total: totalEuros,
-    hash: hash.slice(0, 16),
+    importe: totalEuros,
   });
 
   return `${baseUrl}?${query.toString()}`;

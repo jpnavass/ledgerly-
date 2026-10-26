@@ -168,29 +168,26 @@ describe('Cumplimiento Normativo y Registros Inalterables (compliance.ts)', () =
       seriesNumber: 'FAC-0048',
       issueDate: '2027-05-12',
       totalCents: 125050,
-      hash: 'ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad',
       isVerifactu: true,
     });
 
     assert(qrUrl.startsWith('https://sede.agenciatributaria.gob.es/qr/validador'));
     assert(qrUrl.includes('nif=B88549126'));
-    assert(qrUrl.includes('num=FAC-0048'));
+    assert(qrUrl.includes('numserie=FAC-0048'));
     assert(qrUrl.includes('fecha=12-05-2027'));
-    assert(qrUrl.includes('total=1250.50'));
-    assert(qrUrl.includes('hash=ba7816bf8f01cfea'));
+    assert(qrUrl.includes('importe=1250.50'));
 
     // Generar código QR vectorial en SVG
     const svg = await generateQrSvg(qrUrl);
     assert(svg.includes('<svg'));
   });
 
-  it('código QR: decodifica el payload y comprueba minuciosamente todos los parámetros oficiales', () => {
+  it('código QR: decodifica el payload y comprueba minuciosamente los parámetros exactos de la Orden HAC/1177/2024 Art. 21.2', () => {
     const qrUrl = buildQrVerificationUrl({
       taxId: 'B12345678',
       seriesNumber: 'FAC-2027/01',
       issueDate: '2027-04-15',
       totalCents: 54450,
-      hash: '3C464DAF61ACB827C65FDA19F352A4E3BDC2C640E9E9FC4CC058073F38F12F60',
       isVerifactu: false,
     });
 
@@ -198,10 +195,15 @@ describe('Cumplimiento Normativo y Registros Inalterables (compliance.ts)', () =
     assert.strictEqual(parsedUrl.origin, 'https://sede.agenciatributaria.gob.es');
     assert.strictEqual(parsedUrl.pathname, '/qr/cotejo');
     assert.strictEqual(parsedUrl.searchParams.get('nif'), 'B12345678');
-    assert.strictEqual(parsedUrl.searchParams.get('num'), 'FAC-2027/01');
+    assert.strictEqual(parsedUrl.searchParams.get('numserie'), 'FAC-2027/01');
     assert.strictEqual(parsedUrl.searchParams.get('fecha'), '15-04-2027');
-    assert.strictEqual(parsedUrl.searchParams.get('total'), '544.50');
-    assert.strictEqual(parsedUrl.searchParams.get('hash'), '3C464DAF61ACB827');
+    assert.strictEqual(parsedUrl.searchParams.get('importe'), '544.50');
+
+    // Confirmar que parámetros no reglamentarios (num, total, hash, csv) no constan
+    assert.strictEqual(parsedUrl.searchParams.get('num'), null);
+    assert.strictEqual(parsedUrl.searchParams.get('total'), null);
+    assert.strictEqual(parsedUrl.searchParams.get('hash'), null);
+    assert.strictEqual(parsedUrl.searchParams.get('csv'), null);
   });
 
   it('buildCancellationRecord genera registro de anulación y mantiene encadenamiento criptográfico', async () => {
@@ -308,5 +310,95 @@ describe('Cumplimiento Normativo y Registros Inalterables (compliance.ts)', () =
     assert.strictEqual(calculateExponentialBackoff(1, 1000), 2000);
     assert.strictEqual(calculateExponentialBackoff(2, 1000), 4000);
     assert.strictEqual(calculateExponentialBackoff(3, 1000), 8000);
+  });
+
+  it('cobertura de ramas: buildBillingRecord gestiona facturas rectificativas R1, fallbacks nulos y fechas directas', async () => {
+    const org: Org = {
+      id: 'org-b-1',
+      name: 'Empresa R1',
+      tax_id: 'B11223344',
+      address: 'Calle Real 1',
+      postal_code: '28001',
+      city: 'Madrid',
+      country: 'ES',
+    };
+
+    // Rectificativa sin serie ni fecha explícita
+    const creditDoc: Document = {
+      id: 'doc-credit-branch',
+      org_id: org.id,
+      doc_type: 'credit_note',
+      series: null,
+      number: null,
+      total_cents: -5000,
+      vat_cents: -1050,
+      discount_cents: 0,
+      subtotal_cents: -3950,
+      irpf_cents: 0,
+      items: [],
+      version: 1,
+      status: 'issued',
+    };
+
+    const rec = await buildBillingRecord(creditDoc, org, null, '2027-05-01T10:00:00Z');
+    assert.strictEqual(rec.series, 'FAC');
+    assert.strictEqual(rec.number, 0);
+    assert.strictEqual(rec.record_type, 'alta');
+    assert.strictEqual(rec.previous_hash, '');
+    assert.strictEqual(rec.hash.length, 64);
+  });
+
+  it('cobertura de ramas: verifyBillingChain detecta primer registro con huella no vacía y valida anulaciones', async () => {
+    const org: Org = {
+      id: 'org-b-2',
+      name: 'Empresa Cadena',
+      tax_id: 'B99887766',
+      address: 'Calle Mayor 2',
+      postal_code: '28002',
+      city: 'Madrid',
+      country: 'ES',
+    };
+
+    const docBase: Document = {
+      id: 'doc-chain-branch',
+      org_id: org.id,
+      doc_type: 'invoice',
+      series: 'FAC',
+      number: 1,
+      issue_date: '2027-01-01',
+      total_cents: 10000,
+      vat_cents: 2100,
+      discount_cents: 0,
+      subtotal_cents: 7900,
+      irpf_cents: 0,
+      items: [],
+      version: 1,
+      status: 'issued',
+    };
+
+    const rec1 = await buildBillingRecord(docBase, org, null, '2027-01-01T08:00:00Z');
+    const cancelRec = await buildCancellationRecord(docBase, org, rec1, '2027-01-01T09:00:00Z');
+
+    // Cadena mixta alta + anulación válida
+    const chainOk = await verifyBillingChain([rec1, cancelRec], org.tax_id);
+    assert.strictEqual(chainOk.ok, true);
+
+    // Caso rama: primer registro con previous_hash no vacío
+    const invalidFirst: BillingRecord = {
+      ...rec1,
+      previous_hash: 'HASH_NO_VACIO_ILEGAL',
+    };
+    const failFirst = await verifyBillingChain([invalidFirst], org.tax_id);
+    assert.strictEqual(failFirst.ok, false);
+    assert.strictEqual(failFirst.firstBrokenIndex, 0);
+
+    // Caso rama: registro de anulación alterado
+    const tamperedCancel: BillingRecord = {
+      ...cancelRec,
+      hash: 'HASH_FALSO_ALTERADO_00000000000000000000000000000000000000000000000000',
+    };
+    const failCancel = await verifyBillingChain([rec1, tamperedCancel], org.tax_id);
+    assert.strictEqual(failCancel.ok, false);
+    assert.strictEqual(failCancel.firstBrokenIndex, 1);
   });
 });

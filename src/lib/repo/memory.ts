@@ -200,6 +200,10 @@ export class MemoryRepository implements DataRepository {
   }
 
   // Organización y Ajustes
+  async getAllOrganizations(): Promise<Org[]> {
+    return Array.from(this.orgs.values());
+  }
+
   async getOrganization(orgId: string): Promise<Org | null> {
     return this.orgs.get(orgId) || null;
   }

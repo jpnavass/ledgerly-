@@ -62,6 +62,7 @@ export interface DataRepository {
   recordAuditEvent(orgId: string, event: AuditEvent): Promise<AuditEvent>;
 
   // Organización y Ajustes
+  getAllOrganizations(): Promise<Org[]>;
   getOrganization(orgId: string): Promise<Org | null>;
   saveOrganization(org: Org): Promise<Org>;
   getOrgSettings(orgId: string): Promise<OrgSettings | null>;

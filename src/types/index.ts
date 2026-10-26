@@ -290,6 +290,7 @@ export interface Document {
 
   pdf_url?: string;
   pdf_hash?: string;
+  billing_record_hash?: string;
   public_token_hash?: string;
   locked_at?: string;
   currency?: 'EUR';
